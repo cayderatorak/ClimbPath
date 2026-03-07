@@ -1,30 +1,22 @@
 # database.py
 from supabase import create_client
-import streamlit as st
-import pandas as pd
+import os
 
-# Connect to Supabase using Streamlit secrets
-SUPABASE_URL = st.secrets["SUPABASE_URL"]
-SUPABASE_KEY = st.secrets["SUPABASE_ANON_KEY"]
-
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Function to load flights for a user and track
-def load_flights(track, user_id):
-    resp = supabase.table("flights") \
-        .select("*") \
-        .eq("track", track) \
-        .eq("user_id", user_id) \
-        .order("date") \
-        .execute()
-    
-    data = resp.data if resp.data else []
-    df = pd.DataFrame(data)
-    
-    if df.empty:
-        df = pd.DataFrame(columns=[
-            "id","date","flight_type","duration",
-            "aircraft","instructor",
-            "is_xc","is_night","cost_per_hour","track"
-        ])
-    return df
+# --- Helper functions for common queries ---
+
+def get_student_flights(student_id):
+    return supabase.table("flights").select("*").eq("student_id", student_id).execute()
+
+def get_flight_rate(flight_id):
+    flight = supabase.table("flights").select("*").eq("id", flight_id).single().execute()
+    if flight.data:
+        rate_id = flight.data["rate_id"]
+        return supabase.table("rates").select("*").eq("id", rate_id).single().execute().data
+    return None
+
+def get_student_achievements(student_id):
+    return supabase.table("user_achievements").select("*").eq("user_id", student_id).execute()

@@ -1,24 +1,11 @@
-def predict_solo(flights):
+from database import supabase
+from calculations import estimate_remaining_cost
 
-    total_hours = sum(float(f["duration"]) for f in flights)
-
-    pattern_flights = sum(
-        1 for f in flights if "pattern" in f["flight_type"].lower()
-    )
-
-    score = 0
-
-    if total_hours >= 10:
-        score += 40
-
-    if pattern_flights >= 5:
-        score += 30
-
-    if total_hours >= 15:
-        score += 30
-
-    probability = min(score, 100)
-
-    flights_remaining = max(0, int((15 - total_hours) / 1.2))
-
-    return probability, flights_remaining
+def create_prediction(student_id, predicted_hours_remaining, predicted_completion_date):
+    cost_estimate = estimate_remaining_cost(student_id, predicted_hours_remaining)
+    supabase.table("predictions").insert({
+        "student_id": student_id,
+        "predicted_hours": predicted_hours_remaining,
+        "predicted_cost": cost_estimate,
+        "predicted_completion_date": predicted_completion_date
+    }).execute()

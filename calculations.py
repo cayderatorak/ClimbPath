@@ -1,34 +1,25 @@
-# calculations.py
-import pandas as pd
-from datetime import datetime, timedelta
+from database import supabase, get_flight_rate
 
+# Calculate total hours and breakdown by flight type
 def calculate_totals(df):
-    """
-    Calculate total hours and costs for a given dataframe of flights.
-    Returns exactly 2 items to match app.py:
-    totals dict and total_cost.
-    """
-    totals = {}
-    totals["Dual"] = df[df.flight_type == "Dual"].duration.sum()
-    totals["Solo"] = df[df.flight_type == "Solo"].duration.sum()
-    totals["XC"] = df[df.is_xc == True].duration.sum()
-    totals["Night"] = df[df.is_night == True].duration.sum()
-    totals["Total"] = df.duration.sum()
-
-    total_cost = (df.duration * df.cost_per_hour).sum()
-
+    totals = {
+        "Total": df["total_time"].sum() if not df.empty else 0,
+        "Dual": df[df["solo"]==False]["total_time"].sum() if not df.empty else 0,
+        "Solo": df[df["solo"]==True]["total_time"].sum() if not df.empty else 0,
+        "XC": df[df["cross_country"]==True]["total_time"].sum() if not df.empty else 0,
+        "Night": df[df["night"]==True]["total_time"].sum() if not df.empty else 0
+    }
+    total_cost = df["flight_cost"].sum() if "flight_cost" in df.columns else 0
     return totals, total_cost
 
-def estimate_checkride(totals, targets, hours_week):
-    """
-    Predict checkride date based on remaining hours and weekly schedule.
-    """
-    remaining = max(targets["Total"] - totals["Total"], 0)
-    if hours_week == 0:
-        return "Enter hours/week"
-    weeks = remaining / hours_week
-    date = datetime.today() + timedelta(weeks=weeks)
-    return date.strftime("%b %d %Y")
-
-    def calculate_flight_cost(total_time, aircraft_rate, instructor_rate):
+# Flight cost based on flight time and rate
+def calculate_flight_cost(total_time, aircraft_rate, instructor_rate):
     return total_time * (aircraft_rate + instructor_rate)
+
+# Checkride prediction (example: linear estimate)
+def estimate_checkride(df, targets_hours):
+    total_hours = df["total_time"].sum() if not df.empty else 0
+    remaining = targets_hours - total_hours
+    # Assume average 3 hrs/week
+    weeks_remaining = remaining / 3
+    return weeks_remaining

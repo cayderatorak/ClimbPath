@@ -1,36 +1,13 @@
-# solo.py
-import pandas as pd
+# Calculate solo readiness as percentage of required solo hours
+def calculate_solo_readiness(df, required_solo_hours=5):
+    solo_hours = df[df["solo"]==True]["total_time"].sum() if not df.empty else 0
+    readiness = min(int((solo_hours / required_solo_hours) * 100), 100)
+    return readiness
 
-def calculate_solo_readiness(df):
-    """
-    Calculate a % readiness for solo based on PPL track:
-    Uses Dual, Solo, XC, and Night requirements.
-    Returns 0-100%.
-    """
-    if df.empty:
-        return 0
-
-    # Targets for PPL
-    targets = {
-        "Dual": 20,
-        "Solo": 10,
-        "XC": 5,
-        "Night": 3,
-        "Total": 40
-    }
-
-    # Sum current totals
-    dual = df[df.flight_type=="Dual"].duration.sum()
-    solo = df[df.flight_type=="Solo"].duration.sum()
-    xc = df[df.is_xc==True].duration.sum()
-    night = df[df.is_night==True].duration.sum()
-
-    # Calculate % completion for each category
-    dual_pct = min(dual / targets["Dual"], 1.0)
-    solo_pct = min(solo / targets["Solo"], 1.0)
-    xc_pct = min(xc / targets["XC"], 1.0)
-    night_pct = min(night / targets["Night"], 1.0)
-
-    # Weighted average (example weighting)
-    readiness = (dual_pct*0.3 + solo_pct*0.3 + xc_pct*0.2 + night_pct*0.2) * 100
-    return round(readiness, 1)
+# Predict when student will reach solo readiness
+def predict_solo(df, hours_per_week, targets):
+    solo_hours = df[df["solo"]==True]["total_time"].sum() if not df.empty else 0
+    remaining = max(targets["Solo"] - solo_hours, 0)
+    weeks_needed = remaining / max(hours_per_week,1)
+    predicted_date = pd.Timestamp.now() + pd.to_timedelta(int(weeks_needed*7), unit='d')
+    return predicted_date.date()

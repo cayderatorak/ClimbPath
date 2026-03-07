@@ -1,19 +1,33 @@
-# achievements.py
+from database import supabase
 
-def calculate_achievements(totals: dict):
-    """
-    Returns a list of badges based on flight totals.
-    Example logic: Dual, Solo, XC, Night milestones
-    """
+# Calculate unlocked achievements based on totals
+def calculate_achievements(totals):
     badges = []
-    if totals.get("Dual",0) >= 10:
-        badges.append("Dual Flight Milestone Achieved")
-    if totals.get("Solo",0) >= 5:
-        badges.append("Solo Flight Milestone Achieved")
-    if totals.get("XC",0) >= 5:
-        badges.append("Cross-Country Milestone Achieved")
-    if totals.get("Night",0) >= 3:
-        badges.append("Night Flight Milestone Achieved")
-    if totals.get("Total",0) >= 40:
-        badges.append("Total Flight Hours Completed")
+    if totals["Solo"] >= 1:
+        badges.append("First Solo")
+    if totals["XC"] >= 5:
+        badges.append("Cross-Country Master")
+    if totals["Night"] >= 3:
+        badges.append("Night Owl")
+    if totals["Total"] >= 50:
+        badges.append("50 Hours Logged")
     return badges
+
+# Unlock achievement in DB
+def unlock_achievement(student_id, achievement_name):
+    achievement = supabase.table("achievements").select("*").eq("name", achievement_name).single().execute().data
+    if not achievement:
+        return False
+    # Check if already unlocked
+    exists = supabase.table("user_achievements")\
+        .select("*")\
+        .eq("user_id", student_id)\
+        .eq("achievement_id", achievement["id"]).single().execute().data
+    if exists:
+        return False
+    # Insert
+    supabase.table("user_achievements").insert({
+        "user_id": student_id,
+        "achievement_id": achievement["id"]
+    }).execute()
+    return True
