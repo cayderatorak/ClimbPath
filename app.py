@@ -12,6 +12,8 @@ from achievements import calculate_achievements
 from config import TRACKS
 from solo import calculate_solo_readiness, predict_solo
 from progress import school_averages, student_rankings
+from calculations import calculate_flight_cost
+
 
 # ------------------ PAGE CONFIG ------------------
 st.set_page_config(
@@ -152,6 +154,11 @@ predicted_solo = predict_solo(df, hours_week, targets)
 achievements_list = calculate_achievements(totals)
 school_avg = school_averages(track)
 rank, percentile = student_rankings(user.id, track)
+cost = calculate_flight_cost(
+    flight.total_time,
+    rate.aircraft_hourly_rate,
+    rate.instructor_hourly_rate
+)
 
 # ------------------ METRICS ------------------
 c1,c2,c3,c4,c5,c6 = st.columns(6)

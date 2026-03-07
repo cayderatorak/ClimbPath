@@ -29,3 +29,6 @@ def estimate_checkride(totals, targets, hours_week):
     weeks = remaining / hours_week
     date = datetime.today() + timedelta(weeks=weeks)
     return date.strftime("%b %d %Y")
+
+    def calculate_flight_cost(total_time, aircraft_rate, instructor_rate):
+    return total_time * (aircraft_rate + instructor_rate)
