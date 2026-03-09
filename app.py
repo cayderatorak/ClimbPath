@@ -18,6 +18,7 @@ from logbook import logbook_section
 from activity_feed_view import activity_feed
 from gamification_view import gamification_section
 from config import TRACKS
+from pdf_reports import generate_training_report
 
 st.set_page_config(page_title="ClimbPath", page_icon="✈️", layout="wide")
 
@@ -61,3 +62,15 @@ leaderboard_section()
 feedback_section(feedback_insights)
 logbook_section(df)
 activity_feed()
+
+st.markdown("### 🎓 Student Pilot Toolkit")
+
+st.info("Track your progress from your first lesson to your Private Pilot Checkride.")
+
+with open("resources/climbpath_student_pilot_checklist.pdf", "rb") as pdf_file:
+    st.download_button(
+        label="📥 Download the ClimbPath Student Pilot Checklist",
+        data=pdf_file,
+        file_name="ClimbPath_Student_Pilot_Checklist.pdf",
+        mime="application/pdf"
+    )
