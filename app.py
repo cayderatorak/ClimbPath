@@ -16,6 +16,7 @@ from leaderboard import leaderboard_section
 from feedback_insights import feedback_section
 from logbook import logbook_section
 from activity_feed_view import activity_feed
+from gamification_view import gamification_section
 from config import TRACKS
 
 st.set_page_config(page_title="ClimbPath", page_icon="✈️", layout="wide")
@@ -62,6 +63,7 @@ rank = sidebar_data["rank"]
 percentile = sidebar_data["percentile"]
 risk_alerts = sidebar_data["risk_alerts"]
 feedback_insights = sidebar_data["feedback"]
+gamification = sidebar_data["gamification"]
 
 # Render all sections
 dashboard_metrics(totals, milestone, solo_score, predicted_solo, solo_confidence, total_spent, remaining_cost)
@@ -69,6 +71,7 @@ training_timeline(totals, TRACKS[track])
 training_velocity(df)
 training_heatmap(df)
 pace_analyzer(df)
+gamification_section(gamification)
 risk_section(risk_alerts)
 faa_progress(totals, track)
 achievements_section(achievements_list)

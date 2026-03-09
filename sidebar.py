@@ -10,6 +10,7 @@ from progress import school_averages, student_rankings
 from risk_analyzer import analyze_training_risks
 from feedback_ai import analyze_feedback
 from config import TRACKS
+from gamification import summarize_gamification
 
 def sidebar_controls(user):
     st.sidebar.markdown(f"**Logged in:** {user.email}")
@@ -79,6 +80,8 @@ def sidebar_controls(user):
     risk_alerts = analyze_training_risks(df, TRACKS[track])
     feedback_insights = analyze_feedback(df)
 
+    gamification_summary = summarize_gamification(df)
+
     remaining_hours = max(TRACKS[track]["Total"] - totals["Total"],0)
     avg_cost_per_hour = total_spent / totals["Total"] if totals["Total"] else 0
     remaining_cost = remaining_hours * avg_cost_per_hour
@@ -98,5 +101,7 @@ def sidebar_controls(user):
         "rank": rank,
         "percentile": percentile,
         "risk_alerts": risk_alerts,
-        "feedback": feedback_insights
+    
+        "feedback": feedback_insights,
+        "gamification": gamification_summary
     }
