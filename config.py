@@ -1,7 +1,23 @@
 # config.py
+
+# Define all training tracks and hour requirements
 TRACKS = {
-    "PPL":{"Dual":20,"Solo":10,"XC":5,"Night":3,"Total":40},
-    "Instrument":{"Dual":15,"Solo":5,"XC":5,"Night":5,"Total":30},
-    "CPL":{"Dual":30,"Solo":10,"XC":10,"Night":5,"Total":50},
-    "ATP":{"Dual":20,"Solo":10,"XC":5,"Night":5,"Total":40}
+    "Private Pilot": {
+        "Total": 25,
+        "Solo": 5,
+        "XC": 15,
+        "Night": 10
+    },
+    "Instrument": {
+        "Total": 40,
+        "Solo": 10,
+        "XC": 20,
+        "Night": 10
+    },
+    "Commercial": {
+        "Total": 200,
+        "Solo": 50,
+        "XC": 100,
+        "Night": 40
+    }
 }
