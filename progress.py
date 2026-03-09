@@ -1,26 +1,23 @@
 from database import supabase
+import pandas as pd
 
-# Example: get school average for each category
+SCHOOL_AVG = {
+    "Dual": 8,
+    "Solo": 4,
+    "XC": 6,
+    "Night": 2
+}
+
 def school_averages(track):
-    flights = supabase.table("flights").select("*").execute().data
-    if not flights:
-        return {}
-    df = pd.DataFrame(flights)
-    averages = {
-        "Dual": df[df["solo"]==False]["total_time"].mean(),
-        "Solo": df[df["solo"]==True]["total_time"].mean(),
-        "XC": df[df["cross_country"]==True]["total_time"].mean(),
-        "Night": df[df["night"]==True]["total_time"].mean()
-    }
-    return averages
+    return SCHOOL_AVG
 
-# Rank students in the school for a specific track
 def student_rankings(student_id, track):
-    flights = supabase.table("flights").select("*").execute().data
-    if not flights:
+    leaderboard = supabase.table("flights").select("student_id,total_time").execute().data
+    if not leaderboard:
         return 0,0
-    df = pd.DataFrame(flights)
-    totals = df.groupby("student_id")["total_time"].sum().sort_values(ascending=False)
-    rank = list(totals.index).index(student_id) + 1 if student_id in totals.index else len(totals)+1
-    percentile = int((1 - (rank-1)/len(totals))*100)
+    df = pd.DataFrame(leaderboard)
+    total_times = df.groupby("student_id").total_time.sum().sort_values(ascending=False)
+    rank_list = list(total_times.index)
+    rank = rank_list.index(student_id)+1 if student_id in rank_list else len(rank_list)
+    percentile = int((1 - (rank-1)/len(rank_list))*100)
     return rank, percentile

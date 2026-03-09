@@ -1,6 +1,7 @@
 # database.py
 from supabase import create_client
 import os
+import streamlit as st
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
@@ -8,8 +9,9 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # --- Helper functions for common queries ---
 
-def get_student_flights(student_id):
-    return supabase.table("flights").select("*").eq("student_id", student_id).execute()
+@st.cache_data(ttl=60)
+def get_student_flights(user_id):
+    return supabase.table("flights").select("*").eq("student_id", user_id).execute()
 
 def get_flight_rate(flight_id):
     flight = supabase.table("flights").select("*").eq("id", flight_id).single().execute()
