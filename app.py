@@ -25,27 +25,7 @@ user = login()
 
 # Sidebar + data aggregation
 sidebar_data = sidebar_controls(user)
-st.sidebar.markdown("### Training Track")
 
-# Safe default: first key if TRACKS is not empty
-default_track = list(TRACKS.keys())[0] if TRACKS else None
-
-track = st.sidebar.selectbox(
-    "Select Training Track",
-    options=list(TRACKS.keys()) if TRACKS else ["No Tracks Defined"],
-    index=0
-)
-
-hours_week = st.sidebar.number_input("Hours / Week", 0.0, 20.0, 3.0)
-
-# ------------------ Flight Costs ------------------
-if "dual_cost" not in st.session_state:
-    st.session_state.dual_cost = 180.0
-if "solo_cost" not in st.session_state:
-    st.session_state.solo_cost = 120.0
-
-st.session_state.dual_cost = st.sidebar.number_input("Dual Cost", value=st.session_state.dual_cost)
-st.session_state.solo_cost = st.sidebar.number_input("Solo Cost", value=st.session_state.solo_cost)
 
 # Unpack
 df = sidebar_data["df"]
