@@ -5,6 +5,6 @@ def dashboard_metrics(totals, milestone, solo_score, predicted_solo, solo_confid
     c1.metric("Total Hours", round(totals["Total"],1))
     c2.metric("Next Milestone", milestone)
     c3.metric("Solo Readiness", f"{solo_score}%")
-    c4.metric("Predicted Solo", predicted_solo, f"{solo_confidence}% confidence")
+    c4.metric("Predicted Solo", predicted_solo.strftime("%Y-%m-%d"), f"{solo_confidence}% confidence")
     c5.metric("Total Spent", f"${total_spent:,.0f}")
     c6.metric("Remaining Cost", f"${remaining_cost:,.0f}")
