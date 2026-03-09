@@ -4,3 +4,4 @@ altair
 streamlit-aggrid
 supabase
 humanize
+reportlab
