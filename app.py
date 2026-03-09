@@ -63,14 +63,40 @@ feedback_section(feedback_insights)
 logbook_section(df)
 activity_feed()
 
-st.markdown("### 🎓 Student Pilot Toolkit")
 
-st.info("Track your progress from your first lesson to your Private Pilot Checkride.")
+st.title("✈️ Free Student Pilot Checklist")
 
-with open("resources/climbpath_student_pilot_checklist.pdf", "rb") as pdf_file:
-    st.download_button(
-        label="📥 Download the ClimbPath Student Pilot Checklist",
-        data=pdf_file,
-        file_name="ClimbPath_Student_Pilot_Checklist.pdf",
-        mime="application/pdf"
-    )
+st.write(
+"""
+Download the **ClimbPath Student Pilot Checklist** used by pilots to track
+their progress from first lesson to Private Pilot checkride.
+"""
+)
+
+pdf_path = "resources/climbpath_student_pilot_checklist.pdf"
+
+if os.path.exists(pdf_path):
+    with open(pdf_path, "rb") as pdf_file:
+        st.download_button(
+            label="📥 Download the Free Checklist",
+            data=pdf_file,
+            file_name="ClimbPath_Student_Pilot_Checklist.pdf",
+            mime="application/pdf",
+        )
+
+st.markdown("---")
+
+st.subheader("🚀 Want automatic progress tracking?")
+
+st.write(
+"""
+ClimbPath automatically tracks:
+
+• Flight hours  
+• PPL requirements  
+• Training cost  
+• Checkride readiness
+"""
+)
+
+st.link_button("Start Tracking Flights", "https://climbpath.app/login")
