@@ -16,6 +16,7 @@ from leaderboard import leaderboard_section
 from feedback_insights import feedback_section
 from logbook import logbook_section
 from activity_feed_view import activity_feed
+from config import TRACKS
 
 st.set_page_config(page_title="ClimbPath", page_icon="✈️", layout="wide")
 
