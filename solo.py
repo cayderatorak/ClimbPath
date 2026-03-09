@@ -1,3 +1,4 @@
+import pandas as pd
 # Calculate solo readiness as percentage of required solo hours
 def calculate_solo_readiness(df, required_solo_hours=5):
     solo_hours = df[df["solo"]==True]["total_time"].sum() if not df.empty else 0
