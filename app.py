@@ -43,7 +43,7 @@ feedback_insights = sidebar_data["feedback"]
 
 # Render all sections
 dashboard_metrics(totals, milestone, solo_score, predicted_solo, solo_confidence, total_spent, remaining_cost)
-training_timeline(totals, track)
+training_timeline(totals, TRACKS[track])
 training_velocity(df)
 training_heatmap(df)
 pace_analyzer(df)
