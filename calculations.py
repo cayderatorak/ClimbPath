@@ -1,5 +1,4 @@
 import pandas as pd
-# calculations.py
 
 def calculate_totals(df):
     totals = {
@@ -10,7 +9,6 @@ def calculate_totals(df):
     }
 
     totals["Total"] = sum([totals[k] for k in ["Dual","Solo","XC","Night"]])
-
     return totals, df
 
 
@@ -18,17 +16,14 @@ def calculate_flight_cost(duration, aircraft_rate, instructor_rate):
     return duration * (aircraft_rate + instructor_rate)
 
 
-# --- NEW FEATURE: Checkride Readiness ---
 def checkride_readiness(totals, requirements):
 
     scores = []
 
-    # category progress
     for category in ["Dual", "Solo", "XC", "Night"]:
         progress = min(totals.get(category, 0) / requirements.get(category, 1), 1)
         scores.append(progress)
 
-    # total hours progress
     total_progress = min(totals.get("Total", 0) / requirements.get("Total", 1), 1)
     scores.append(total_progress)
 
@@ -37,7 +32,6 @@ def checkride_readiness(totals, requirements):
     return round(readiness_score * 100, 1)
 
 
-# --- OPTIONAL: Remaining Hours ---
 def hours_remaining(totals, requirements):
 
     remaining = {}
@@ -47,8 +41,6 @@ def hours_remaining(totals, requirements):
 
     return remaining
 
-
-    # calculations.py
 
 def calculate_training_pace(df):
 

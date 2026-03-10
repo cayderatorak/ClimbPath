@@ -20,7 +20,13 @@ from gamification_view import gamification_section
 from config import TRACKS
 from pdf_reports import generate_training_report
 from faa_requirements import PRIVATE_PILOT_REQS, INSTRUMENT_REQS
-from calculations import checkride_readiness, hours_remaining, calculate_training_pace
+from calculations import (
+    calculate_totals,
+    calculate_flight_cost,
+    checkride_readiness,
+    hours_remaining,
+    calculate_training_pace
+)
 
 st.set_page_config(page_title="ClimbPath", page_icon="✈️", layout="wide")
 
