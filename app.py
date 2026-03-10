@@ -53,6 +53,7 @@ percentile = sidebar_data["percentile"]
 risk_alerts = sidebar_data["risk_alerts"]
 feedback_insights = sidebar_data["feedback"]
 gamification = sidebar_data["gamification"]
+hours_per_week = calculate_training_pace(df)  # df = your flight log dataframe
 
 # Render all sections
 dashboard_metrics(totals, milestone, solo_score, predicted_solo, solo_confidence, total_spent, remaining_cost, hours_per_week)
