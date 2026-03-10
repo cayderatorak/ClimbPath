@@ -100,3 +100,13 @@ ClimbPath automatically tracks:
 )
 
 st.link_button("Start Tracking Flights", "https://climbpath.app/login")
+
+
+faa_progress(
+    totals,
+    faa_requirements,
+    student_name,
+    total_hours,
+    solo_hours,
+    xc_hours
+)
