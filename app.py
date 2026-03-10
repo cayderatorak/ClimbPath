@@ -54,7 +54,14 @@ training_heatmap(df)
 pace_analyzer(df)
 gamification_section(gamification)
 risk_section(risk_alerts)
-faa_progress(totals, track)
+faa_progress(
+    totals,
+    faa_requirements,
+    student_name,
+    total_hours,
+    solo_hours,
+    xc_hours
+)
 achievements_section(achievements_list)
 school_comparison(totals, school_avg)
 ranking_section(rank, percentile, track)
@@ -102,11 +109,3 @@ ClimbPath automatically tracks:
 st.link_button("Start Tracking Flights", "https://climbpath.app/login")
 
 
-faa_progress(
-    totals,
-    faa_requirements,
-    student_name,
-    total_hours,
-    solo_hours,
-    xc_hours
-)
