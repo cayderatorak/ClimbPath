@@ -19,6 +19,8 @@ from activity_feed_view import activity_feed
 from gamification_view import gamification_section
 from config import TRACKS
 from pdf_reports import generate_training_report
+from faa_requirements import PRIVATE_PILOT_REQS, INSTRUMENT_REQS
+from calculations import checkride_readiness, hours_remaining, calculate_training_pace
 
 st.set_page_config(page_title="ClimbPath", page_icon="✈️", layout="wide")
 
@@ -54,14 +56,6 @@ training_heatmap(df)
 pace_analyzer(df)
 gamification_section(gamification)
 risk_section(risk_alerts)
-faa_progress(
-    totals,
-    faa_requirements,
-    student_name,
-    total_hours,
-    solo_hours,
-    xc_hours
-)
 achievements_section(achievements_list)
 school_comparison(totals, school_avg)
 ranking_section(rank, percentile, track)
@@ -109,3 +103,27 @@ ClimbPath automatically tracks:
 st.link_button("Start Tracking Flights", "https://climbpath.app/login")
 
 
+score = checkride_readiness(totals, PRIVATE_PILOT_REQS)
+
+st.subheader("🧑‍✈️ Checkride Readiness")
+st.metric("Readiness", f"{score}%")
+st.progress(score / 100)
+
+remaining = hours_remaining(totals, PRIVATE_PILOT_REQS)
+
+st.info(f"Estimated hours remaining: {remaining['Total']:.1f}")
+
+
+solo_prediction = predict_solo(df, hours_per_week, PRIVATE_PILOT_REQS)
+
+st.subheader("✈️ First Solo Prediction")
+
+st.write(f"Estimated Date: {solo_prediction['predicted_date']}")
+st.write(f"Hours Remaining: {solo_prediction['hours_remaining']}")
+
+st.progress(solo_prediction["confidence"] / 100)
+
+
+hours_per_week = calculate_training_pace(df)
+
+solo_prediction = predict_solo(df, hours_per_week, PRIVATE_PILOT_REQS)
