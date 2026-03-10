@@ -56,6 +56,8 @@ def calculate_training_pace(df):
 
     total_hours = df["total_time"].sum()
 
+    hours_per_week = calculate_training_pace(df)  # df = your flight log dataframe
+
     hours_per_week = total_hours / weeks_training
 
     return round(hours_per_week, 2)
