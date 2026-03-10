@@ -73,7 +73,11 @@ def sidebar_controls(user):
     totals,_ = calculate_totals(df)
     milestone = next_milestone(totals)
     solo_score = calculate_solo_readiness(df)
-    predicted_solo, solo_confidence = predict_solo(df, hours_week, TRACKS[track])
+    solo_prediction = predict_solo(df, hours_week, TRACKS[track])
+
+    predicted_solo = solo_prediction["predicted_date"]
+    solo_confidence = solo_prediction["confidence"]
+    
     achievements_list = calculate_achievements(totals)
     school_avg = school_averages(track)
     rank, percentile = student_rankings(user.id, track)
