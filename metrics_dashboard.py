@@ -1,6 +1,6 @@
 import streamlit as st
 
-def dashboard_metrics(totals, milestone, solo_score, predicted_solo, solo_confidence, total_spent, remaining_cost):
+def dashboard_metrics(totals, milestone, solo_score, predicted_solo, solo_confidence, total_spent, remaining_cost, hours_per_week):
     c1,c2,c3,c4,c5,c6,c7 = st.columns(7)
     c1.metric("Total Hours", round(totals["Total"],1))
     c2.metric("Next Milestone", milestone)

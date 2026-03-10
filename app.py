@@ -55,7 +55,7 @@ feedback_insights = sidebar_data["feedback"]
 gamification = sidebar_data["gamification"]
 
 # Render all sections
-dashboard_metrics(totals, milestone, solo_score, predicted_solo, solo_confidence, total_spent, remaining_cost)
+dashboard_metrics(totals, milestone, solo_score, predicted_solo, solo_confidence, total_spent, remaining_cost, hours_per_week)
 training_timeline(totals, TRACKS[track])
 training_velocity(df)
 training_heatmap(df)
