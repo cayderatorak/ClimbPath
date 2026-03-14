@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime
-from load_data import load_student_flights
+from load_data import load_student_flights, load_student_feedback_notes
 from add_flight import add_flight as add_flight_func
 from calculations import calculate_totals, calculate_flight_cost
 from milestones import next_milestone
@@ -82,7 +82,10 @@ def sidebar_controls(user):
     school_avg = school_averages(track)
     rank, percentile = student_rankings(user.id, track)
     risk_alerts = analyze_training_risks(df, TRACKS[track])
-    feedback_insights = analyze_feedback(df)
+    feedback_df = load_student_feedback_notes(user.id)
+    feedback_insights = analyze_feedback(feedback_df)
+
+    gamification_summary = summarize_gamification(df)
 
     gamification_summary = summarize_gamification(df)
 
