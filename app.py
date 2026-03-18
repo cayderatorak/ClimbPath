@@ -4,7 +4,7 @@ import os
 from auth import login
 from instructor import instructor_dashboard
 from sidebar import sidebar_controls
-from solo_prediction import predict_solo
+from prediction import predict_solo
 from metrics_dashboard import dashboard_metrics
 from timeline import training_timeline
 from velocity_chart import training_velocity
