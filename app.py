@@ -33,6 +33,17 @@ from calculations import (
 
 st.set_page_config(page_title="ClimbPath", page_icon="✈️", layout="wide")
 
+st.info("Used by student pilots to track hours, costs, and checkride readiness ✈️")
+
+st.markdown("""
+<style>
+button {
+    height: 3em;
+    font-size: 16px;
+}
+</style>
+""", unsafe_allow_html=True)
+
 user = login()
 
 if not user:
@@ -40,10 +51,20 @@ if not user:
 
 user_role = user["role"]
 
+st.markdown("Don't have an account?")
+if st.button("Create Account"):
+    st.session_state.show_signup = True
+    
+if "role" not in st.session_state:
+    st.session_state.role = "student"
+
 # Instructor view
 if user_role == "instructor":
     instructor_dashboard.show(user)
     st.stop()
+
+if "role" not in st.session_state:
+    st.session_state.role = "student"
 
 # Sidebar + data aggregation
 sidebar_data = sidebar_controls(user)
