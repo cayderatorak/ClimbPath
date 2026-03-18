@@ -12,8 +12,18 @@ from feedback_ai import analyze_feedback
 from config import TRACKS
 from gamification import summarize_gamification
 
+
+def _user_value(user, key):
+    if isinstance(user, dict):
+        return user.get(key)
+    return getattr(user, key, None)
+
+
 def sidebar_controls(user):
-    st.sidebar.markdown(f"**Logged in:** {user['email']}")
+    user_email = _user_value(user, "email") or "Unknown user"
+    user_id = _user_value(user, "id")
+
+    st.sidebar.markdown(f"**Logged in:** {user_email}")
 
     if st.sidebar.button("Logout"):
         from database import supabase
@@ -29,7 +39,7 @@ def sidebar_controls(user):
 
     # Add Flight inputs
     date = st.sidebar.date_input("Date", datetime.today())
-    flight_type = st.sidebar.selectbox("Flight Type", ["Dual","Solo"])
+    flight_type = st.sidebar.selectbox("Flight Type", ["Dual", "Solo"])
     duration = st.sidebar.number_input("Duration (hrs)", 0.0, 10.0, 1.0)
     aircraft_id = st.sidebar.text_input("Aircraft ID")
     instructor_id = st.sidebar.text_input("Instructor ID")
@@ -40,7 +50,7 @@ def sidebar_controls(user):
 
     if st.sidebar.button("Add Flight"):
         add_flight_func(
-            user_id=user.id,
+            user_id=user_id,
             instructor_id=instructor_id,
             aircraft_id=aircraft_id,
             rate_id=rate_id,
@@ -54,14 +64,14 @@ def sidebar_controls(user):
         st.rerun()
 
     # Load flights
-    df = load_student_flights(user["id"])
+    df = load_student_flights(user_id)
 
     # Cost calculation
     for idx, flight in df.iterrows():
         from database import get_flight_rate
         rate = get_flight_rate(flight["id"])
         if rate:
-            df.loc[idx,"flight_cost"] = calculate_flight_cost(
+            df.loc[idx, "flight_cost"] = calculate_flight_cost(
                 flight["total_time"],
                 rate["aircraft_hourly_rate"],
                 rate["instructor_hourly_rate"]
@@ -70,7 +80,7 @@ def sidebar_controls(user):
     total_spent = df["flight_cost"].sum() if not df.empty else 0
 
     # Training calculations
-    totals,_ = calculate_totals(df)
+    totals, _ = calculate_totals(df)
     milestone = next_milestone(totals)
     solo_score = calculate_solo_readiness(df)
     solo_prediction = predict_solo(df, hours_week, TRACKS[track])
@@ -80,16 +90,14 @@ def sidebar_controls(user):
     
     achievements_list = calculate_achievements(totals)
     school_avg = school_averages(track)
-    rank, percentile = student_rankings(user.id, track)
+    rank, percentile = student_rankings(user_id, track)
     risk_alerts = analyze_training_risks(df, TRACKS[track])
-    feedback_df = load_student_feedback_notes(user.id)
+    feedback_df = load_student_feedback_notes(user_id)
     feedback_insights = analyze_feedback(feedback_df)
 
     gamification_summary = summarize_gamification(df)
 
-    gamification_summary = summarize_gamification(df)
-
-    remaining_hours = max(TRACKS[track]["Total"] - totals["Total"],0)
+    remaining_hours = max(TRACKS[track]["Total"] - totals["Total"], 0)
     avg_cost_per_hour = total_spent / totals["Total"] if totals["Total"] else 0
     remaining_cost = remaining_hours * avg_cost_per_hour
 
@@ -108,7 +116,6 @@ def sidebar_controls(user):
         "rank": rank,
         "percentile": percentile,
         "risk_alerts": risk_alerts,
-    
         "feedback": feedback_insights,
         "gamification": gamification_summary
     }
