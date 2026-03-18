@@ -61,3 +61,43 @@ def calculate_training_pace(df):
     hours_per_week = total_hours / weeks_training
 
     return round(hours_per_week, 2)
+
+def estimate_remaining_cost(
+    totals,
+    requirements,
+    hours_per_week,
+    cost_per_hour=180
+    ):
+    """
+    Smarter training cost estimator based on pace + realistic completion hours.
+    """
+
+    current_hours = totals.get("Total", 0)
+
+    # --- Realistic baseline instead of FAA minimum ---
+    base_required_hours = 65  # average real-world PPL completion
+
+    # --- Adjust based on training pace ---
+    if hours_per_week >= 4:
+        pace_factor = 0.9   # very efficient training
+    elif hours_per_week >= 2:
+        pace_factor = 1.0   # normal pace
+    elif hours_per_week >= 1:
+        pace_factor = 1.15  # slower → more review flights
+    else:
+        pace_factor = 1.3   # very slow → lots of repetition
+
+    adjusted_required_hours = base_required_hours * pace_factor
+
+    # --- Remaining hours ---
+    remaining_hours = max(0, adjusted_required_hours - current_hours)
+
+    # --- Cost estimate ---
+    estimated_cost = remaining_hours * cost_per_hour
+
+    return {
+        "adjusted_required_hours": round(adjusted_required_hours, 1),
+        "remaining_hours": round(remaining_hours, 1),
+        "estimated_cost": round(estimated_cost, 0),
+        "pace_factor": pace_factor
+    }
