@@ -2,7 +2,7 @@ import streamlit as st
 import os
 
 from auth import login
-from instructor import instructor_dashboard,
+from instructor import instructor_dashboard
 from sidebar import sidebar_controls
 from solo_prediction import predict_solo
 from metrics_dashboard import dashboard_metrics
