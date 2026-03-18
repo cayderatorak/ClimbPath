@@ -1,7 +1,10 @@
 import streamlit as st
+import os
 
 from auth import login
+from instructor import instructor_dashboard,
 from sidebar import sidebar_controls
+from solo_prediction import predict_solo
 from metrics_dashboard import dashboard_metrics
 from timeline import training_timeline
 from velocity_chart import training_velocity
@@ -31,6 +34,16 @@ from calculations import (
 st.set_page_config(page_title="ClimbPath", page_icon="✈️", layout="wide")
 
 user = login()
+
+if not user:
+    st.stop()
+
+user_role = user["role"]
+
+# Instructor view
+if user_role == "instructor":
+    instructor_dashboard.show(user)
+    st.stop()
 
 # Sidebar + data aggregation
 sidebar_data = sidebar_controls(user)
