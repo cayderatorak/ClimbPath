@@ -2,11 +2,11 @@ import streamlit as st
 
 def authenticate_user(email, password):
     if email and password:
-        return {
-            "id": email,  # temporary ID
-            "email": email,
-            "name": email.split("@")[0]
-        }
+    return {
+        "id": email,  # ✅ add this
+        "email": email,
+        "name": email.split("@")[0]
+    }
     return None
 
 def login():
