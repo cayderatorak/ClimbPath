@@ -1,8 +1,8 @@
 import streamlit as st
 from database import supabase
 
-def show(user):
 
+def show(user):
     st.title("🧑‍✈️ Instructor Dashboard")
 
     students = (
@@ -27,17 +27,14 @@ def show(user):
 
         if col4.button("Open", key=s["id"]):
             st.session_state.selected_student = s["id"]
+    
+    email = st.text_input("Student Email")
 
-
-email = st.text_input("Student Email")
-
-if st.button("Send Invite"):
-
-    invite = {
-        "email": email,
-        "instructor_id": user["id"]
-    }
-
-    supabase.table("invites").insert(invite).execute()
-
-    st.success("Invite sent!")
+ if st.button("Send Invite"):
+        invite = {
+            "email": email,
+            "instructor_id": user["id"]
+        }
+  
+        supabase.table("invites").insert(invite).execute()
+        st.success("Invite sent!")
