@@ -44,7 +44,7 @@ def login():
 
     st.markdown("---")
 
-     selected_role = st.radio(
+    selected_role = st.radio(
         "Choose how you want to sign in",
         options=list(ROLE_OPTIONS.keys()),
         format_func=lambda role: ROLE_OPTIONS[role]["label"],
