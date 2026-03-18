@@ -13,7 +13,7 @@ from config import TRACKS
 from gamification import summarize_gamification
 
 def sidebar_controls(user):
-    st.sidebar.markdown(f"**Logged in:** {user.email}")
+    st.sidebar.markdown(f"**Logged in:** {user['email']}")
 
     if st.sidebar.button("Logout"):
         from database import supabase
