@@ -2,12 +2,13 @@ import streamlit as st
 
 def authenticate_user(email, password):
     if email and password:
-    return {
-        "id": email,  # ✅ add this
-        "email": email,
-        "name": email.split("@")[0]
-    }
+        return {
+            "id": email,
+            "email": email,
+            "name": email.split("@")[0]
+        }
     return None
+
 
 def login():
 
@@ -23,7 +24,6 @@ def login():
 
     st.markdown("---")
 
-    # Role selection buttons
     col1, col2 = st.columns(2)
 
     if col1.button("🧑‍🎓 Student", use_container_width=True):
