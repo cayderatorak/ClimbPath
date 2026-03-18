@@ -58,7 +58,8 @@ def sidebar_controls(user):
             flight_type=flight_type,
             is_xc=is_xc,
             is_night=is_night,
-            feedback=feedback
+            feedback=feedback,
+            flight_date=date
         )
         st.success("Flight added!")
         st.rerun()
