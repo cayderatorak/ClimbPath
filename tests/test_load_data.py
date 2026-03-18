@@ -21,6 +21,12 @@ class LoadDataTests(unittest.TestCase):
         self.assertTrue(df.empty)
         self.assertEqual(list(df.columns), load_data.FLIGHT_COLUMNS)
 
+    def test_load_student_flights_returns_empty_frame_when_student_id_missing(self):
+        df = load_data.load_student_flights(None)
+
+        self.assertTrue(df.empty)
+        self.assertEqual(list(df.columns), load_data.FLIGHT_COLUMNS)
+
     def test_load_student_feedback_notes_filters_blank_notes(self):
         payload = [
             {"notes": "Needs more right rudder", "created_at": "2026-03-18", "event_type": "lesson"},
@@ -35,6 +41,15 @@ class LoadDataTests(unittest.TestCase):
 
         self.assertEqual(df["notes"].tolist(), ["Needs more right rudder"])
 
+    def test_load_student_feedback_notes_returns_empty_frame_on_unexpected_error(self):
+        with patch.object(load_data.supabase, "table") as table_mock:
+            table_mock.return_value.select.return_value.eq.return_value.execute.side_effect = RuntimeError("boom")
+
+            df = load_data.load_student_feedback_notes("student-123")
+
+        self.assertTrue(df.empty)
+        self.assertEqual(list(df.columns), load_data.FEEDBACK_COLUMNS)
+        
 
 class SidebarUserValueTests(unittest.TestCase):
     def test_user_value_supports_dicts_and_objects(self):
