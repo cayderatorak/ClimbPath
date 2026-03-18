@@ -1,9 +1,9 @@
 import streamlit as st
 
 def authenticate_user(email, password):
-    # Simple working login (temporary)
     if email and password:
         return {
+            "id": email,  # temporary ID
             "email": email,
             "name": email.split("@")[0]
         }
