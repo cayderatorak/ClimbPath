@@ -1,5 +1,14 @@
 import streamlit as st
 
+def authenticate_user(email, password):
+    # Simple working login (temporary)
+    if email and password:
+        return {
+            "email": email,
+            "name": email.split("@")[0]
+        }
+    return None
+
 def login():
 
     st.markdown(

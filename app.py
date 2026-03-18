@@ -46,15 +46,6 @@ button {
 
 user = login()
 
-def authenticate_user(email, password):
-    # Temporary test login
-    if email and password:
-        return {
-            "email": email,
-            "name": email.split("@")[0]
-        }
-    return None
-
 if not user:
     st.stop()
 
