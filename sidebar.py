@@ -54,7 +54,7 @@ def sidebar_controls(user):
         st.rerun()
 
     # Load flights
-    df = load_student_flights(user.id)
+    df = load_student_flights(user["id"])
 
     # Cost calculation
     for idx, flight in df.iterrows():
