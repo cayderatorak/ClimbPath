@@ -15,10 +15,7 @@ def login():
     st.markdown("---")
 
     # Role selection buttons
-    col1, col2, col3 = st.columns([1,2,1])
-
-    with col2:
-        login()
+    col1, col2 = st.columns(2)
 
     if col1.button("🧑‍🎓 Student", use_container_width=True):
         st.session_state.role = "student"
