@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import humanize
-from datetime import datetime
+from datetime import datetime, timezone
 from database import supabase
 
 
@@ -27,10 +27,13 @@ def activity_feed(user_id):
         st.write("No recent activity.")
         return
 
-    feed_df = pd.DataFrame(feed)
-    for _, row in feed_df.iterrows():
-        ts = pd.to_datetime(row["created_at"])
-        time_ago = humanize.naturaltime(datetime.utcnow() - ts)
+    for row in feed:
+        try:
+            ts = pd.to_datetime(row["created_at"], utc=True).to_pydatetime()
+            now = datetime.now(timezone.utc)
+            time_ago = humanize.naturaltime(now - ts)
+        except Exception:
+            time_ago = ""
 
         activity_type = row.get("activity_type", "")
         title = row.get("title") or ""
