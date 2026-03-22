@@ -1,5 +1,4 @@
 from datetime import date, datetime
-
 from database import supabase
 from milestones import check_and_unlock_milestones
 
@@ -49,11 +48,14 @@ def add_flight(
         "notes": feedback,
     }).execute()
 
+    # Fixed: use correct column names matching activity_feed schema
     supabase.table("activity_feed").insert({
-        "student_id": user_id,
-        "event_type": "flight",
-        "event_value": duration,
-        "related_id": flight_id,
+        "user_id": user_id,
+        "activity_type": "flight",
+        "title": f"Logged a {flight_type.lower()} flight",
+        "description": f"{duration} hrs",
+        "related_flight_id": flight_id,
+        "is_public": True,
     }).execute()
 
     check_and_unlock_milestones(user_id)

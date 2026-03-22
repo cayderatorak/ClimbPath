@@ -103,7 +103,7 @@ ranking_section(rank, percentile, track)
 leaderboard_section()
 feedback_section(feedback_insights)
 logbook_section(df)
-activity_feed()
+activity_feed(user["id"])
 
 
 st.title("✈️ Free Student Pilot Checklist")
