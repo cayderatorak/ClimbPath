@@ -11,6 +11,16 @@ def _serialize_date(value):
     return value
 
 
+def _normalize_optional_id(value):
+    if value is None:
+        return None
+    if isinstance(value, str):
+        cleaned = value.strip()
+        return cleaned or None
+    return value
+
+
+
 def add_flight(
     user_id,
     instructor_id,
@@ -24,6 +34,9 @@ def add_flight(
     flight_date=None,
 ):
     flight_date_str = _serialize_date(flight_date or datetime.utcnow())
+    instructor_id = _normalize_optional_id(instructor_id)
+    aircraft_id = _normalize_optional_id(aircraft_id)
+    rate_id = _normalize_optional_id(rate_id)
 
     is_solo = flight_type == "Solo"
     is_dual = flight_type == "Dual"
