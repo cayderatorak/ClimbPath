@@ -50,10 +50,6 @@ if not user:
     st.stop()
 
 user_role = user["role"]
-
-st.markdown("Don't have an account?")
-if st.button("Create Account"):
-    st.session_state.show_signup = True
     
 if "role" not in st.session_state:
     st.session_state.role = "student"
