@@ -145,33 +145,43 @@ def sidebar_controls(user):
     date = st.sidebar.date_input("Date", datetime.today())
     flight_type = st.sidebar.selectbox("Flight Type", ["Dual", "Solo"])
     duration = st.sidebar.number_input("Duration (hrs)", 0.0, 10.0, 1.0, step=0.1)
-    aircraft_id = st.sidebar.text_input("Aircraft ID")
-    instructor_id = st.sidebar.text_input("Instructor ID")
-    rate_id = st.sidebar.text_input("Rate ID")
+    aircraft_tail_number = st.sidebar.text_input("Aircraft Tail Number")
+    instructor_name = st.sidebar.text_input("Instructor Name")
     is_xc = st.sidebar.checkbox("XC")
     is_night = st.sidebar.checkbox("Night")
     feedback = st.sidebar.text_area("Instructor Feedback")
 
     if st.sidebar.button("Add Flight"):
         try:
+            metadata_lines = []
+            if instructor_name.strip():
+                metadata_lines.append(f"Instructor: {instructor_name.strip()}")
+            if aircraft_tail_number.strip():
+                metadata_lines.append(f"Aircraft: {aircraft_tail_number.strip()}")
+            metadata = "\n".join(metadata_lines)
+            combined_feedback = feedback.strip()
+            if metadata:
+                combined_feedback = (
+                    f"{combined_feedback}\n\n{metadata}" if combined_feedback else metadata
+                )
+
             add_flight_func(
                 user_id=user_id,
-                instructor_id=instructor_id,
-                aircraft_id=aircraft_id,
-                rate_id=rate_id,
+                instructor_id=None,
+                aircraft_id=None,
+                rate_id=None,
                 duration=duration,
                 flight_type=flight_type,
                 is_xc=is_xc,
                 is_night=is_night,
-                feedback=feedback,
+                feedback=combined_feedback,
                 flight_date=date
             )
             st.success("Flight added!")
             st.rerun()
         except Exception:
             st.error(
-                "Unable to add flight. Please verify instructor/aircraft/rate IDs are valid "
-                "UUIDs and try again."
+                "Unable to add flight. Please try again."
             )
 
 
