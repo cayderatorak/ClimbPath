@@ -29,6 +29,16 @@ def login():
     if "user" not in st.session_state:
         st.session_state.user = None
 
+    if st.session_state.user is None:
+        try:
+            current_user = supabase.auth.get_user().user
+            if current_user:
+                selected_role = st.session_state.get("role", "student")
+                st.session_state.user = _normalize_user(current_user, selected_role)
+        except Exception:
+            # No persisted auth session available yet (or token refresh failed).
+            pass
+
     if st.session_state.user:
         return st.session_state.user
 
