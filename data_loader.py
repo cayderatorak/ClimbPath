@@ -16,3 +16,11 @@ def load_student_data(user_id):
     events_df = pd.DataFrame(events) if events else pd.DataFrame()
 
     return flights_df, events_df
+
+def get_aircraft():
+    response = supabase.table("aircraft").select("*").execute()
+    return response.data
+
+def get_instructors():
+    response = supabase.table("instructors").select("*").execute()
+    return response.data
