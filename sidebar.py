@@ -2,7 +2,8 @@ import streamlit as st
 from datetime import datetime
 from load_data import load_student_flights, load_student_feedback_notes, _safe_execute, _empty_frame
 from add_flight import add_flight as add_flight_func
-from calculations import calculate_totals, calculate_flight_cost, estimate_remaining_cost
+from calculations import calculate_totals, calculate_flight_cost
+import calculations as calculations_module
 from milestones import next_milestone
 from solo import calculate_solo_readiness, predict_solo
 from achievements import calculate_achievements
@@ -17,6 +18,29 @@ from database import supabase
 DEFAULT_DUAL_COST = 180.0
 DEFAULT_SOLO_COST = 120.0
 SETTINGS_TABLE = "student_settings"
+
+def _estimate_remaining_cost(*, totals, requirements, hours_per_week, cost_per_hour, proficiency_score, consistency_score):
+    estimator = getattr(calculations_module, "estimate_remaining_cost", None)
+    if callable(estimator):
+        return estimator(
+            totals=totals,
+            requirements=requirements,
+            hours_per_week=hours_per_week,
+            cost_per_hour=cost_per_hour,
+            proficiency_score=proficiency_score,
+            consistency_score=consistency_score,
+        )
+
+    required_total = requirements.get("Total", 0) if requirements else 0
+    remaining_hours = max(0, required_total - totals.get("Total", 0))
+    return {
+        "adjusted_required_hours": round(required_total, 1),
+        "remaining_hours": round(remaining_hours, 1),
+        "estimated_cost": round(remaining_hours * cost_per_hour, 0),
+        "pace_factor": 1.0,
+        "proficiency_factor": 1.0,
+        "consistency_factor": 1.0,
+    }
 
 def _user_value(user, key):
     if isinstance(user, dict):
@@ -187,7 +211,7 @@ def sidebar_controls(user):
     avg_cost_per_hour = total_spent / totals["Total"] if totals["Total"] else 0
     blended_hourly_cost = avg_cost_per_hour if avg_cost_per_hour > 0 else ((dual_cost + solo_cost) / 2)
 
-    cost_projection = estimate_remaining_cost(
+    cost_projection = _estimate_remaining_cost(
         totals=totals,
         requirements=TRACKS[track],
         hours_per_week=hours_week,
