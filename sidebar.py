@@ -34,7 +34,7 @@ def sidebar_controls(user):
     # Inputs
     track = st.sidebar.selectbox("Training Track", list(TRACKS.keys()))
     hours_week = st.sidebar.number_input("Hours / Week", 0.0, 20.0, 3.0)
-       dual_cost = st.sidebar.number_input(
+    dual_cost = st.sidebar.number_input(
         "Dual Cost",
         value=st.session_state.get("dual_cost", 180.0),
         step=5.0,
