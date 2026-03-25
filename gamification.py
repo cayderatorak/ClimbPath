@@ -9,11 +9,8 @@ import pandas as pd
 
 @dataclass
 class GamificationSummary:
-    total_xp: int
     current_streak_days: int
     longest_streak_days: int
-    level: int
-    next_level_xp: int
 
 
 def _normalize_flight_dates(df: pd.DataFrame) -> list:
@@ -59,42 +56,9 @@ def calculate_streaks(dates: Iterable, today: datetime | None = None) -> tuple[i
     return current, longest
 
 
-def calculate_xp(df: pd.DataFrame) -> int:
-    if df.empty:
-        return 0
-
-    total_xp = 0
-    for _, flight in df.iterrows():
-        duration = float(flight.get("total_time", 0) or 0)
-        is_solo = bool(flight.get("solo", False))
-        is_xc = bool(flight.get("cross_country", False))
-        is_night = bool(flight.get("night", False))
-
-        total_xp += int(duration * 10)  # Base XP: 10 per flight hour.
-        if is_solo:
-            total_xp += 15
-        if is_xc:
-            total_xp += 10
-        if is_night:
-            total_xp += 10
-
-    return total_xp
-
-
-def calculate_level(total_xp: int) -> tuple[int, int]:
-    level = (total_xp // 100) + 1
-    next_level_xp = level * 100
-    return level, next_level_xp
-
-
 def summarize_gamification(df: pd.DataFrame) -> GamificationSummary:
-    total_xp = calculate_xp(df)
     current_streak, longest_streak = calculate_streaks(_normalize_flight_dates(df), today=datetime.utcnow())
-    level, next_level_xp = calculate_level(total_xp)
     return GamificationSummary(
-        total_xp=total_xp,
         current_streak_days=current_streak,
         longest_streak_days=longest_streak,
-        level=level,
-        next_level_xp=next_level_xp,
     )
