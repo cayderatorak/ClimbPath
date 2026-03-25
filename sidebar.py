@@ -2,7 +2,7 @@ import streamlit as st
 from datetime import datetime
 from load_data import load_student_flights, load_student_feedback_notes, _safe_execute, _empty_frame
 from add_flight import add_flight as add_flight_func
-from calculations import calculate_totals, calculate_flight_cost
+from calculations import calculate_totals, calculate_flight_cost, estimate_remaining_cost
 from milestones import next_milestone
 from solo import calculate_solo_readiness, predict_solo
 from achievements import calculate_achievements
@@ -178,9 +178,18 @@ def sidebar_controls(user):
 
     gamification_summary = summarize_gamification(df)
 
-    remaining_hours = max(TRACKS[track]["Total"] - totals["Total"], 0)
     avg_cost_per_hour = total_spent / totals["Total"] if totals["Total"] else 0
-    remaining_cost = remaining_hours * avg_cost_per_hour
+    blended_hourly_cost = avg_cost_per_hour if avg_cost_per_hour > 0 else ((dual_cost + solo_cost) / 2)
+
+    cost_projection = estimate_remaining_cost(
+        totals=totals,
+        requirements=TRACKS[track],
+        hours_per_week=hours_week,
+        cost_per_hour=blended_hourly_cost,
+        proficiency_score=solo_score,
+        consistency_score=solo_confidence,
+    )
+    remaining_cost = cost_projection["estimated_cost"]
 
     return {
         "df": df,

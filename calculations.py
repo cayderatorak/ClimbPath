@@ -67,15 +67,18 @@ def estimate_remaining_cost(
     requirements,
     hours_per_week,
     cost_per_hour=180
+    cost_per_hour=180,
+    proficiency_score=50,
+    consistency_score=50,
     ):
     """
-    Smarter training cost estimator based on pace + realistic completion hours.
+    Smarter training cost estimator based on pace, consistency, and proficiency.
     """
 
     current_hours = totals.get("Total", 0)
-
-    # --- Realistic baseline instead of FAA minimum ---
-    base_required_hours = 65  # average real-world PPL completion
+    required_total = requirements.get("Total", 0) if requirements else 0
+    # Use a realistic training completion floor while respecting track targets.
+    base_required_hours = max(required_total, 65)
 
     # --- Adjust based on training pace ---
     if hours_per_week >= 4:
@@ -87,7 +90,20 @@ def estimate_remaining_cost(
     else:
         pace_factor = 1.3   # very slow → lots of repetition
 
-    adjusted_required_hours = base_required_hours * pace_factor
+    # Better proficiency lowers likely repeat/review hours.
+    bounded_proficiency = min(max(float(proficiency_score or 0), 0.0), 100.0)
+    proficiency_factor = 1.2 - (bounded_proficiency / 100.0) * 0.35  # 1.20 -> 0.85
+
+    # Better consistency lowers likely relearning overhead.
+    bounded_consistency = min(max(float(consistency_score or 0), 0.0), 100.0)
+    consistency_factor = 1.2 - (bounded_consistency / 100.0) * 0.35  # 1.20 -> 0.85
+
+    adjusted_required_hours = (
+        base_required_hours
+        * pace_factor
+        * proficiency_factor
+        * consistency_factor
+    )
 
     # --- Remaining hours ---
     remaining_hours = max(0, adjusted_required_hours - current_hours)
@@ -99,5 +115,7 @@ def estimate_remaining_cost(
         "adjusted_required_hours": round(adjusted_required_hours, 1),
         "remaining_hours": round(remaining_hours, 1),
         "estimated_cost": round(estimated_cost, 0),
-        "pace_factor": pace_factor
+        "pace_factor": pace_factor,
+        "proficiency_factor": round(proficiency_factor, 3),
+        "consistency_factor": round(consistency_factor, 3),
     }
