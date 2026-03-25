@@ -26,6 +26,12 @@ def _normalize_optional_id(value):
             return None
     return value
 
+def _best_effort_insert(table_name, payload):
+    try:
+        supabase.table(table_name).insert(payload).execute()
+    except Exception:
+        # Secondary records should not block the main flight log action.
+        return
 
 
 def add_flight(
@@ -48,7 +54,7 @@ def add_flight(
     is_solo = flight_type == "Solo"
     is_dual = flight_type == "Dual"
 
-    result = supabase.table("flights").insert({
+    _best_effort_insert("training_events", {
         "student_id":   user_id,
         "instructor_id": instructor_id if not is_solo else None,
         "aircraft_id":  aircraft_id,
@@ -61,18 +67,18 @@ def add_flight(
         "night":        duration if is_night else 0,
         "solo":         is_solo,
         "remarks":      feedback,
-    }).execute()
+    })
 
     flight_id = result.data[0]["id"] if result.data else None
 
-    supabase.table("training_events").insert({
+    _best_effort_insert("activity_feed", {
         "student_id":        user_id,
         "instructor_id":     instructor_id,
         "related_flight_id": flight_id,
         "event_type":        flight_type.lower(),
         "event_value":       duration,
         "notes":             feedback,
-    }).execute()
+    })
 
     supabase.table("activity_feed").insert({
         "user_id":           user_id,

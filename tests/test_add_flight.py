@@ -22,6 +22,11 @@ class _TableInsertExecute:
         return self.response
 
 
+class _TableInsertRaises(_TableInsertExecute):
+    def execute(self):
+        raise RuntimeError("insert failed")
+
+
 class _SupabaseStub:
     def __init__(self):
         self.tables = {
@@ -117,3 +122,30 @@ def test_add_flight_converts_invalid_foreign_keys_to_null(monkeypatch):
     assert flights_payload['instructor_id'] is None
     assert flights_payload['aircraft_id'] is None
     assert flights_payload['rate_id'] is None
+
+
+def test_add_flight_succeeds_when_secondary_inserts_fail(monkeypatch):
+    supabase_stub = _SupabaseStub()
+    supabase_stub.tables['training_events'] = _TableInsertRaises(SimpleNamespace(data=[]))
+    supabase_stub.tables['activity_feed'] = _TableInsertRaises(SimpleNamespace(data=[]))
+    milestone_mock = MagicMock()
+
+    monkeypatch.setattr(add_flight, 'supabase', supabase_stub)
+    monkeypatch.setattr(add_flight, 'check_and_unlock_milestones', milestone_mock)
+
+    add_flight.add_flight(
+        user_id='student-1',
+        instructor_id=None,
+        aircraft_id=None,
+        rate_id=None,
+        duration=1.2,
+        flight_type='Dual',
+        is_xc=False,
+        is_night=False,
+        feedback='ok',
+        flight_date=date(2026, 3, 24),
+    )
+
+    flights_payload = supabase_stub.tables['flights'].payloads[0]
+    assert flights_payload['student_id'] == 'student-1'
+    milestone_mock.assert_called_once_with('student-1')
