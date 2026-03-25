@@ -174,16 +174,6 @@ def sidebar_controls(user):
                 "UUIDs and try again."
             )
 
-duration = st.number_input("Flight Duration (hours)", min_value=0.0, step=0.1)
-
-if st.button("Save Flight"):
-    supabase.table("flights").insert({
-        "aircraft_id": selected_aircraft_id,
-        "instructor_id": selected_instructor_id,
-        "duration": duration
-    }).execute()
-
-    st.success("Flight saved successfully ✈️")
 
     # Load flights
     df = load_student_flights(user_id)
@@ -209,7 +199,7 @@ if st.button("Save Flight"):
 
     predicted_solo = solo_prediction["predicted_date"]
     solo_confidence = solo_prediction["confidence"]
-    
+
     achievements_list = calculate_achievements(totals)
     school_avg = school_averages(track)
     rank, percentile = student_rankings(user_id, track)
