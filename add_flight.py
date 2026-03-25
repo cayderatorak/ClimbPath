@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from uuid import UUID
 from database import supabase
 from milestones import check_and_unlock_milestones
 
@@ -16,7 +17,13 @@ def _normalize_optional_id(value):
         return None
     if isinstance(value, str):
         cleaned = value.strip()
-        return cleaned or None
+        if not cleaned:
+            return None
+        try:
+            UUID(cleaned)
+            return cleaned
+        except ValueError:
+            return None
     return value
 
 

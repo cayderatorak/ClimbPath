@@ -129,20 +129,26 @@ def sidebar_controls(user):
     feedback = st.sidebar.text_area("Instructor Feedback")
 
     if st.sidebar.button("Add Flight"):
-        add_flight_func(
-            user_id=user_id,
-            instructor_id=instructor_id,
-            aircraft_id=aircraft_id,
-            rate_id=rate_id,
-            duration=duration,
-            flight_type=flight_type,
-            is_xc=is_xc,
-            is_night=is_night,
-            feedback=feedback,
-            flight_date=date
-        )
-        st.success("Flight added!")
-        st.rerun()
+        try:
+            add_flight_func(
+                user_id=user_id,
+                instructor_id=instructor_id,
+                aircraft_id=aircraft_id,
+                rate_id=rate_id,
+                duration=duration,
+                flight_type=flight_type,
+                is_xc=is_xc,
+                is_night=is_night,
+                feedback=feedback,
+                flight_date=date
+            )
+            st.success("Flight added!")
+            st.rerun()
+        except Exception:
+            st.error(
+                "Unable to add flight. Please verify instructor/aircraft/rate IDs are valid "
+                "UUIDs and try again."
+            )
 
     # Load flights
     df = load_student_flights(user_id)

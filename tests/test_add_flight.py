@@ -91,3 +91,29 @@ def test_add_flight_converts_blank_foreign_keys_to_null(monkeypatch):
     assert flights_payload['instructor_id'] is None
     assert flights_payload['aircraft_id'] is None
     assert flights_payload['rate_id'] is None
+
+
+def test_add_flight_converts_invalid_foreign_keys_to_null(monkeypatch):
+    supabase_stub = _SupabaseStub()
+    milestone_mock = MagicMock()
+
+    monkeypatch.setattr(add_flight, 'supabase', supabase_stub)
+    monkeypatch.setattr(add_flight, 'check_and_unlock_milestones', milestone_mock)
+
+    add_flight.add_flight(
+        user_id='student-1',
+        instructor_id='not-a-uuid',
+        aircraft_id='also-not-a-uuid',
+        rate_id='rate-123',
+        duration=1.0,
+        flight_type='Dual',
+        is_xc=False,
+        is_night=False,
+        feedback='',
+        flight_date=date(2026, 3, 24),
+    )
+
+    flights_payload = supabase_stub.tables['flights'].payloads[0]
+    assert flights_payload['instructor_id'] is None
+    assert flights_payload['aircraft_id'] is None
+    assert flights_payload['rate_id'] is None
