@@ -34,13 +34,21 @@ def sidebar_controls(user):
     # Inputs
     track = st.sidebar.selectbox("Training Track", list(TRACKS.keys()))
     hours_week = st.sidebar.number_input("Hours / Week", 0.0, 20.0, 3.0)
-    dual_cost = st.sidebar.number_input("Dual Cost", value=st.session_state.get("dual_cost", 180.0))
-    solo_cost = st.sidebar.number_input("Solo Cost", value=st.session_state.get("solo_cost", 120.0))
+       dual_cost = st.sidebar.number_input(
+        "Dual Cost",
+        value=st.session_state.get("dual_cost", 180.0),
+        step=5.0,
+    )
+    solo_cost = st.sidebar.number_input(
+        "Solo Cost",
+        value=st.session_state.get("solo_cost", 120.0),
+        step=5.0,
+    )
 
     # Add Flight inputs
     date = st.sidebar.date_input("Date", datetime.today())
     flight_type = st.sidebar.selectbox("Flight Type", ["Dual", "Solo"])
-    duration = st.sidebar.number_input("Duration (hrs)", 0.0, 10.0, 1.0)
+    duration = st.sidebar.number_input("Duration (hrs)", 0.0, 10.0, 1.0, step=0.1)
     aircraft_id = st.sidebar.text_input("Aircraft ID")
     instructor_id = st.sidebar.text_input("Instructor ID")
     rate_id = st.sidebar.text_input("Rate ID")
