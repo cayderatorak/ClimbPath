@@ -11,12 +11,61 @@ from risk_analyzer import analyze_training_risks
 from feedback_ai import analyze_feedback
 from config import TRACKS
 from gamification import summarize_gamification
+from database import supabase
 
+
+DEFAULT_DUAL_COST = 180.0
+DEFAULT_SOLO_COST = 120.0
+SETTINGS_TABLE = "student_settings"
 
 def _user_value(user, key):
     if isinstance(user, dict):
         return user.get(key)
     return getattr(user, key, None)
+
+
+def _load_student_cost_settings(user_id):
+    if not user_id:
+        return DEFAULT_DUAL_COST, DEFAULT_SOLO_COST
+
+    try:
+        response = (
+            supabase.table(SETTINGS_TABLE)
+            .select("dual_cost,solo_cost")
+            .eq("student_id", user_id)
+            .limit(1)
+            .execute()
+        )
+        if response.data:
+            settings = response.data[0]
+            dual_cost = float(settings.get("dual_cost") or DEFAULT_DUAL_COST)
+            solo_cost = float(settings.get("solo_cost") or DEFAULT_SOLO_COST)
+            return dual_cost, solo_cost
+    except Exception:
+        pass
+
+    return DEFAULT_DUAL_COST, DEFAULT_SOLO_COST
+
+
+def _save_student_cost_settings(user_id, dual_cost, solo_cost):
+    if not user_id:
+        return
+
+    try:
+        (
+            supabase.table(SETTINGS_TABLE)
+            .upsert(
+                {
+                    "student_id": user_id,
+                    "dual_cost": float(dual_cost),
+                    "solo_cost": float(solo_cost),
+                },
+                on_conflict="student_id",
+            )
+            .execute()
+        )
+    except Exception:
+        pass
 
 
 def sidebar_controls(user):
@@ -31,19 +80,42 @@ def sidebar_controls(user):
         st.session_state.user = None
         st.rerun()
 
+    loaded_for_user = st.session_state.get("cost_settings_loaded_for")
+    if loaded_for_user != user_id:
+        loaded_dual_cost, loaded_solo_cost = _load_student_cost_settings(user_id)
+        st.session_state.dual_cost = loaded_dual_cost
+        st.session_state.solo_cost = loaded_solo_cost
+        st.session_state.saved_dual_cost = loaded_dual_cost
+        st.session_state.saved_solo_cost = loaded_solo_cost
+        st.session_state.cost_settings_loaded_for = user_id
+
     # Inputs
     track = st.sidebar.selectbox("Training Track", list(TRACKS.keys()))
     hours_week = st.sidebar.number_input("Hours / Week", 0.0, 20.0, 3.0, step=0.1)
     dual_cost = st.sidebar.number_input(
         "Dual Cost",
-        value=st.session_state.get("dual_cost", 180.0),
+        min_value=0.0,
         step=5.0,
+        key="dual_cost",
     )
     solo_cost = st.sidebar.number_input(
         "Solo Cost",
-        value=st.session_state.get("solo_cost", 120.0),
+        min_value=0.0,
         step=5.0,
+        key="solo_cost",
     )
+
+    if (
+        user_id
+        and (
+            dual_cost != st.session_state.get("saved_dual_cost")
+            or solo_cost != st.session_state.get("saved_solo_cost")
+        )
+    ):
+        _save_student_cost_settings(user_id, dual_cost, solo_cost)
+        st.session_state.saved_dual_cost = dual_cost
+        st.session_state.saved_solo_cost = solo_cost
+
 
     # Add Flight inputs
     date = st.sidebar.date_input("Date", datetime.today())
