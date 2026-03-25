@@ -34,7 +34,7 @@ def login():
 
     st.markdown(
         """
-        <h1 style='text-align: center;'>✈️ ClimbPath</h1>
+        <h1 style='text-align: center;'>✈️ My ClimbPath</h1>
         <p style='text-align: center; font-size:18px;'>
         Track your journey from first lesson to checkride
         </p>

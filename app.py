@@ -31,7 +31,7 @@ from calculations import (
     calculate_training_pace
 )
 
-st.set_page_config(page_title="ClimbPath", page_icon="✈️", layout="wide")
+st.set_page_config(page_title="My ClimbPath", page_icon="✈️", layout="wide")
 
 st.info("Used by student pilots to track hours, costs, and checkride readiness ✈️")
 
@@ -128,7 +128,7 @@ st.subheader("🚀 Want automatic progress tracking?")
 
 st.write(
 """
-ClimbPath automatically tracks:
+My ClimbPath automatically tracks:
 
 • Flight hours  
 • PPL requirements  
@@ -137,7 +137,7 @@ ClimbPath automatically tracks:
 """
 )
 
-st.link_button("Start Tracking Flights", "https://climbpath.app/login")
+st.link_button("Start Tracking Flights", "https://myclimbpath.com/login")
 
 
 score = checkride_readiness(totals, PRIVATE_PILOT_REQS)
