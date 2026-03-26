@@ -1,18 +1,27 @@
 # risk_analyzer.py
 import pandas as pd
 
+
 def analyze_training_risks(df, targets):
     risks = []
 
     if df.empty:
         return ["No flights logged yet"]
 
-        df = df.copy()
-        df["created_at"] = pd.to_datetime(df["created_at"], utc=True, errors="coerce")
-        df = df.dropna(subset=["created_at"])
+    df = df.copy()
 
-        if df.empty:
-            return ["No valid flight dates available yet"]
+    # Some ingestion paths may only include `date` instead of `created_at`.
+    if "created_at" not in df.columns and "date" in df.columns:
+        df["created_at"] = df["date"]
+
+    if "created_at" not in df.columns:
+        return ["No valid flight dates available yet"]
+
+    df["created_at"] = pd.to_datetime(df["created_at"], utc=True, errors="coerce")
+    df = df.dropna(subset=["created_at"])
+
+    if df.empty:
+        return ["No valid flight dates available yet"]
 
     # ------------------ TRAINING GAP ------------------
     last_flight = df["created_at"].max()
