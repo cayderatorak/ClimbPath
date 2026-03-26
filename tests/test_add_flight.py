@@ -69,6 +69,7 @@ def test_add_flight_serializes_selected_date_and_links_records(monkeypatch):
     flights_payload = supabase_stub.tables['flights'].payloads[0]
     assert flights_payload['date'] == '2026-03-17'
     assert flights_payload['solo'] is True
+    assert flights_payload['user_id'] == STUDENT_ID
 
     events_payload = supabase_stub.tables['training_events'].payloads[0]
     assert events_payload['related_flight_id'] == 42

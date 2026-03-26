@@ -62,7 +62,20 @@ def _resolve_student_id(user_id):
         # Fall back to caller-provided user_id if auth context is unavailable.
         auth_user_id = None
 
-    return _normalize_required_id(auth_user_id) or _normalize_required_id(user_id)
+    resolved = _normalize_required_id(auth_user_id) or _normalize_required_id(user_id)
+
+    # Ensure subsequent inserts use the authenticated session whenever possible so
+    # Postgres RLS checks relying on auth.uid() can evaluate correctly.
+    if resolved and auth_user_id is None:
+        try:
+            auth = getattr(supabase, "auth", None)
+            if auth and hasattr(auth, "set_auth"):
+                auth.set_auth(resolved)
+        except Exception:
+            # Best effort only; caller-provided identifier remains the fallback.
+            pass
+
+    return resolved
 
 
 def _best_effort_insert(table_name, payload):
@@ -105,6 +118,7 @@ def add_flight(
 
     flight_payload = {
         "student_id": student_id,
+        "user_id": student_id,
         "instructor_id": instructor_id,
         "aircraft_id": aircraft_id,
         "rate_id": rate_id,
