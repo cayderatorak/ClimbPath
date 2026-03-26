@@ -31,6 +31,40 @@ def _normalize_optional_id(value):
     return value
 
 
+def _normalize_required_id(value):
+    if value is None:
+        return None
+    if isinstance(value, str):
+        cleaned = value.strip()
+        if not cleaned:
+            return None
+        try:
+            UUID(cleaned)
+            return cleaned
+        except ValueError:
+            return None
+    return value
+
+
+def _resolve_student_id(user_id):
+    """
+    Resolve the student identifier used for inserts.
+    Prefer the authenticated Supabase user's UUID to satisfy RLS checks.
+    """
+    auth_user_id = None
+    try:
+        auth = getattr(supabase, "auth", None)
+        if auth and hasattr(auth, "get_user"):
+            current_user = auth.get_user()
+            auth_user = getattr(current_user, "user", None)
+            auth_user_id = getattr(auth_user, "id", None)
+    except Exception:
+        # Fall back to caller-provided user_id if auth context is unavailable.
+        auth_user_id = None
+
+    return _normalize_required_id(auth_user_id) or _normalize_required_id(user_id)
+
+
 def _best_effort_insert(table_name, payload):
     try:
         supabase.table(table_name).insert(payload).execute()
@@ -57,6 +91,12 @@ def add_flight(
     flight_date=None,
 ):
     flight_date_str = _serialize_date(flight_date or datetime.utcnow())
+    student_id = _resolve_student_id(user_id)
+    if not student_id:
+        raise RuntimeError(
+            "Unable to add flight to 'flights' table: missing authenticated student id."
+        )
+
     instructor_id = _normalize_optional_id(instructor_id)
     aircraft_id = _normalize_optional_id(aircraft_id)
     rate_id = _normalize_optional_id(rate_id)
@@ -64,7 +104,7 @@ def add_flight(
     is_solo = flight_type == "Solo"
 
     flight_payload = {
-        "student_id": user_id,
+        "student_id": student_id,
         "instructor_id": instructor_id,
         "aircraft_id": aircraft_id,
         "rate_id": rate_id,
@@ -97,7 +137,7 @@ def add_flight(
     _best_effort_insert(
         "training_events",
         {
-            "student_id": user_id,
+            "student_id": student_id,
             "instructor_id": instructor_id if not is_solo else None,
             "related_flight_id": flight_id,
             "event_type": flight_type.lower(),
@@ -109,7 +149,7 @@ def add_flight(
     _best_effort_insert(
         "activity_feed",
         {
-            "student_id": user_id,
+            "student_id": student_id,
             "instructor_id": instructor_id,
             "related_flight_id": flight_id,
             "event_type": flight_type.lower(),
@@ -121,7 +161,7 @@ def add_flight(
     _best_effort_insert(
         "activity_feed",
         {
-            "user_id": user_id,
+            "student_id": student_id,
             "activity_type": "flight",
             "title": f"Logged a {flight_type.lower()} flight",
             "description": f"{duration} hrs",
@@ -130,4 +170,4 @@ def add_flight(
         },
     )
 
-    check_and_unlock_milestones(user_id)
+    check_and_unlock_milestones(student_id)

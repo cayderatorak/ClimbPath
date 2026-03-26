@@ -8,6 +8,8 @@ from unittest.mock import MagicMock
 
 import add_flight
 
+STUDENT_ID = "00000000-0000-0000-0000-000000000001"
+
 
 class _TableInsertExecute:
     def __init__(self, response):
@@ -34,6 +36,11 @@ class _SupabaseStub:
             'training_events': _TableInsertExecute(SimpleNamespace(data=[])),
             'activity_feed': _TableInsertExecute(SimpleNamespace(data=[])),
         }
+        self.auth = SimpleNamespace(
+            get_user=lambda: SimpleNamespace(
+                user=SimpleNamespace(id=None)
+            )
+        )
 
     def table(self, name):
         return self.tables[name]
@@ -47,7 +54,7 @@ def test_add_flight_serializes_selected_date_and_links_records(monkeypatch):
     monkeypatch.setattr(add_flight, 'check_and_unlock_milestones', milestone_mock)
 
     add_flight.add_flight(
-        user_id='student-1',
+        user_id=STUDENT_ID,
         instructor_id='instructor-1',
         aircraft_id='aircraft-1',
         rate_id='rate-1',
@@ -70,7 +77,7 @@ def test_add_flight_serializes_selected_date_and_links_records(monkeypatch):
     feed_payload = supabase_stub.tables['activity_feed'].payloads[0]
     assert feed_payload['related_flight_id'] == 42
 
-    milestone_mock.assert_called_once_with('student-1')
+    milestone_mock.assert_called_once_with(STUDENT_ID)
 
 def test_add_flight_converts_blank_foreign_keys_to_null(monkeypatch):
     supabase_stub = _SupabaseStub()
@@ -80,7 +87,7 @@ def test_add_flight_converts_blank_foreign_keys_to_null(monkeypatch):
     monkeypatch.setattr(add_flight, 'check_and_unlock_milestones', milestone_mock)
 
     add_flight.add_flight(
-        user_id='student-1',
+        user_id=STUDENT_ID,
         instructor_id='   ',
         aircraft_id='',
         rate_id='',
@@ -106,7 +113,7 @@ def test_add_flight_converts_invalid_foreign_keys_to_null(monkeypatch):
     monkeypatch.setattr(add_flight, 'check_and_unlock_milestones', milestone_mock)
 
     add_flight.add_flight(
-        user_id='student-1',
+        user_id=STUDENT_ID,
         instructor_id='not-a-uuid',
         aircraft_id='also-not-a-uuid',
         rate_id='rate-123',
@@ -134,7 +141,7 @@ def test_add_flight_succeeds_when_secondary_inserts_fail(monkeypatch):
     monkeypatch.setattr(add_flight, 'check_and_unlock_milestones', milestone_mock)
 
     add_flight.add_flight(
-        user_id='student-1',
+        user_id=STUDENT_ID,
         instructor_id=None,
         aircraft_id=None,
         rate_id=None,
@@ -147,5 +154,35 @@ def test_add_flight_succeeds_when_secondary_inserts_fail(monkeypatch):
     )
 
     flights_payload = supabase_stub.tables['flights'].payloads[0]
-    assert flights_payload['student_id'] == 'student-1'
-    milestone_mock.assert_called_once_with('student-1')
+    assert flights_payload['student_id'] == STUDENT_ID
+    milestone_mock.assert_called_once_with(STUDENT_ID)
+
+
+def test_add_flight_prefers_authenticated_user_id_for_rls(monkeypatch):
+    supabase_stub = _SupabaseStub()
+    supabase_stub.auth = SimpleNamespace(
+        get_user=lambda: SimpleNamespace(
+            user=SimpleNamespace(id="00000000-0000-0000-0000-000000000099")
+        )
+    )
+    milestone_mock = MagicMock()
+
+    monkeypatch.setattr(add_flight, 'supabase', supabase_stub)
+    monkeypatch.setattr(add_flight, 'check_and_unlock_milestones', milestone_mock)
+
+    add_flight.add_flight(
+        user_id=STUDENT_ID,
+        instructor_id=None,
+        aircraft_id=None,
+        rate_id=None,
+        duration=1.2,
+        flight_type='Dual',
+        is_xc=False,
+        is_night=False,
+        feedback='ok',
+        flight_date=date(2026, 3, 24),
+    )
+
+    flights_payload = supabase_stub.tables['flights'].payloads[0]
+    assert flights_payload['student_id'] == "00000000-0000-0000-0000-000000000099"
+    milestone_mock.assert_called_once_with("00000000-0000-0000-0000-000000000099")
