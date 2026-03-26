@@ -10,8 +10,10 @@ SOLO_HOUR_MAX = 30         # realistic late solo
 def _days_since_last_flight(df):
     if df.empty:
         return None
-    last = pd.to_datetime(df["created_at"]).max()
-    return (pd.Timestamp.now() - last).days
+    last = pd.to_datetime(df["created_at"], utc=True, errors="coerce").max()
+    if pd.isna(last):
+        return None
+    return (pd.Timestamp.now(tz="UTC") - last).days
 
 
 def _avg_flights_per_week(df):
