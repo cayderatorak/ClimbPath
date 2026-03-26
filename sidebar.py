@@ -179,10 +179,22 @@ def sidebar_controls(user):
             )
             st.success("Flight added!")
             st.rerun()
-        except Exception:
+        except Exception as exc:
             st.error(
-                "Unable to add flight. Please try again."
+                "Unable to add flight. Open diagnostics below for details."
             )
+            with st.expander("Add flight diagnostics"):
+                st.code(str(exc))
+                st.write(
+                    {
+                        "user_id": user_id,
+                        "flight_type": flight_type,
+                        "duration": duration,
+                        "is_xc": is_xc,
+                        "is_night": is_night,
+                        "date": str(date),
+                    }
+                )
 
 
     # Load flights

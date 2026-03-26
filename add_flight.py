@@ -1,8 +1,11 @@
 from datetime import date, datetime
+import logging
 from uuid import UUID
 
 from database import supabase
 from milestones import check_and_unlock_milestones
+
+logger = logging.getLogger(__name__)
 
 
 def _serialize_date(value):
@@ -31,8 +34,13 @@ def _normalize_optional_id(value):
 def _best_effort_insert(table_name, payload):
     try:
         supabase.table(table_name).insert(payload).execute()
-    except Exception:
+    except Exception as exc:
         # Secondary records should not block the main flight log action.
+        logger.warning(
+            "Secondary insert failed for table '%s': %s",
+            table_name,
+            exc,
+        )
         return
 
 
@@ -55,23 +63,34 @@ def add_flight(
 
     is_solo = flight_type == "Solo"
 
-    result = (
-        supabase.table("flights")
-        .insert(
-            {
-                "student_id": user_id,
-                "instructor_id": instructor_id,
-                "aircraft_id": aircraft_id,
-                "rate_id": rate_id,
-                "date": flight_date_str,
-                "total_time": duration,
-                "solo": is_solo,
-                "cross_country": bool(is_xc),
-                "night": bool(is_night),
-            }
+    flight_payload = {
+        "student_id": user_id,
+        "instructor_id": instructor_id,
+        "aircraft_id": aircraft_id,
+        "rate_id": rate_id,
+        "date": flight_date_str,
+        "total_time": duration,
+        "solo": is_solo,
+        "cross_country": bool(is_xc),
+        "night": bool(is_night),
+    }
+
+    try:
+        result = (
+            supabase.table("flights")
+            .insert(flight_payload)
+            .execute()
         )
-        .execute()
-    )
+
+    except Exception as exc:
+        logger.exception(
+            "Flight insert failed for user_id=%s with payload keys=%s",
+            user_id,
+            sorted(flight_payload.keys()),
+        )
+        raise RuntimeError(
+            f"Unable to add flight to 'flights' table: {exc}"
+        ) from exc
 
     flight_id = result.data[0]["id"] if result.data else None
 
