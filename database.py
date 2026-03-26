@@ -14,20 +14,18 @@ def get_student_flights(user_id):
     return supabase.table("flights").select("*").eq("student_id", user_id).execute()
 
 def get_flight_rate(flight_id):
-    try:
-        flight = supabase.table("flights").select("rate_id").eq("id", flight_id).single().execute()
-    except APIError:
+    flight = supabase.table("flights").select("rate_id").eq("id", flight_id).single().execute()
+    if not flight.data:
         return None
 
-            rate_id = flight.data.get("rate_id")
-        if not rate_id:
-            return None
+    rate_id = flight.data.get("rate_id")
+    if not rate_id:
+        return None
 
-        try:
-            return supabase.table("rates").select("*").eq("id", rate_id).single().execute().data
-        except APIError:
-            return None
-    return None
+    rate = supabase.table("rates").select("*").eq("id", rate_id).single().execute()
+    return rate.data if rate.data else None
+
+
 
 def get_student_achievements(student_id):
     return supabase.table("user_achievements").select("*").eq("user_id", student_id).execute()
