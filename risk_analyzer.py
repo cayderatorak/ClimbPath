@@ -1,6 +1,5 @@
 # risk_analyzer.py
 import pandas as pd
-from datetime import datetime
 
 def analyze_training_risks(df, targets):
     risks = []
@@ -8,12 +7,16 @@ def analyze_training_risks(df, targets):
     if df.empty:
         return ["No flights logged yet"]
 
-    df = df.copy()
-    df["created_at"] = pd.to_datetime(df["created_at"])
+        df = df.copy()
+        df["created_at"] = pd.to_datetime(df["created_at"], utc=True, errors="coerce")
+        df = df.dropna(subset=["created_at"])
+
+        if df.empty:
+            return ["No valid flight dates available yet"]
 
     # ------------------ TRAINING GAP ------------------
     last_flight = df["created_at"].max()
-    gap_days = (datetime.utcnow() - last_flight).days
+    gap_days = (pd.Timestamp.now(tz="UTC") - last_flight).days
     if gap_days > 14:
         risks.append(f"Long training gap detected ({gap_days} days)")
 
