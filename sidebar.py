@@ -199,6 +199,8 @@ def sidebar_controls(user):
 
     # Load flights
     df = load_student_flights(user_id)
+    if "flight_cost" not in df.columns:
+        df["flight_cost"] = 0.0
 
     # Cost calculation
     for idx, flight in df.iterrows():
@@ -211,7 +213,7 @@ def sidebar_controls(user):
                 rate["instructor_hourly_rate"]
             )
 
-    total_spent = df["flight_cost"].sum() if not df.empty else 0
+    total_spent = df["flight_cost"].sum()
 
     # Training calculations
     totals, _ = calculate_totals(df)
