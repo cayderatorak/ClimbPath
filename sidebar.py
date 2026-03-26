@@ -102,6 +102,8 @@ def sidebar_controls(user):
         from database import supabase
         supabase.auth.sign_out()
         st.session_state.user = None
+        st.session_state.pop("supabase_access_token", None)
+        st.session_state.pop("supabase_refresh_token", None)
         st.rerun()
 
     loaded_for_user = st.session_state.get("cost_settings_loaded_for")

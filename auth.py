@@ -20,14 +20,43 @@ def _normalize_user(auth_user, role):
     }
 
 
+def _persist_auth_session(response):
+    session = getattr(response, "session", None)
+    if not session:
+        return
+
+    access_token = getattr(session, "access_token", None)
+    refresh_token = getattr(session, "refresh_token", None)
+    if access_token:
+        st.session_state.supabase_access_token = access_token
+    if refresh_token:
+        st.session_state.supabase_refresh_token = refresh_token
+
+
+def _restore_auth_session():
+    access_token = st.session_state.get("supabase_access_token")
+    refresh_token = st.session_state.get("supabase_refresh_token")
+    if not access_token or not refresh_token:
+        return
+
+    try:
+        supabase.auth.set_session(access_token, refresh_token)
+    except Exception:
+        # Ignore stale/expired tokens and allow normal login flow.
+        pass
+
+
 def authenticate_user(email, password, role):
     response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+    _persist_auth_session(response)
     return _normalize_user(response.user, role)
 
 
 def login():
     if "user" not in st.session_state:
         st.session_state.user = None
+
+    _restore_auth_session()
 
     if st.session_state.user is None:
         try:
