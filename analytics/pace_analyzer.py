@@ -1,5 +1,6 @@
 import streamlit as st
-from datetime import datetime, timedelta
+import pandas as pd
+from datetime import timedelta
 
 def pace_analyzer(df):
     st.markdown("### Training Pace Analyzer")
@@ -7,8 +8,14 @@ def pace_analyzer(df):
         st.write("Log flights to analyze training pace.")
         return
 
-    df["created_at"] = pd.to_datetime(df["created_at"])
-    last30 = df[df["created_at"] > datetime.utcnow() - timedelta(days=30)]
+    df["created_at"] = pd.to_datetime(df["created_at"], errors="coerce", utc=True)
+    df = df.dropna(subset=["created_at"])
+    if df.empty:
+        st.write("No valid flight timestamps available yet.")
+        return
+
+    cutoff = pd.Timestamp.now(tz="UTC") - timedelta(days=30)
+    last30 = df[df["created_at"] > cutoff]
     hours_30 = last30["total_time"].sum()
 
     total_days = (df["created_at"].max() - df["created_at"].min()).days
