@@ -7,11 +7,21 @@ def pace_analyzer(df):
         st.write("Log flights to analyze training pace.")
         return
 
-    df["created_at"] = pd.to_datetime(df["created_at"])
-    last30 = df[df["created_at"] > datetime.utcnow() - timedelta(days=30)]
+    timestamp_col = "created_at" if "created_at" in df.columns else "date" if "date" in df.columns else None
+    if not timestamp_col:
+        st.write("No timestamp data available yet.")
+        return
+
+    df[timestamp_col] = pd.to_datetime(df[timestamp_col], errors="coerce")
+    df = df.dropna(subset=[timestamp_col])
+    if df.empty:
+        st.write("No valid flight timestamps available yet.")
+        return
+
+    last30 = df[df[timestamp_col] > datetime.utcnow() - timedelta(days=30)]
     hours_30 = last30["total_time"].sum()
 
-    total_days = (df["created_at"].max() - df["created_at"].min()).days
+    total_days = (df[timestamp_col].max() - df[timestamp_col].min()).days
     weeks = max(total_days / 7, 1)
     weekly_avg = df["total_time"].sum() / weeks
 

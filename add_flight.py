@@ -118,7 +118,6 @@ def add_flight(
 
     flight_payload = {
         "student_id": student_id,
-        "user_id": student_id,
         "instructor_id": instructor_id,
         "aircraft_id": aircraft_id,
         "rate_id": rate_id,
