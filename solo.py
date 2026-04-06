@@ -7,6 +7,19 @@ SOLO_HOUR_MIN = 10         # realistic early solo
 SOLO_HOUR_MAX = 30         # realistic late solo
 
 
+def _solo_hours(df):
+    if df.empty:
+        return 0.0
+
+    total_time = pd.to_numeric(df.get("total_time", 0), errors="coerce").fillna(0)
+    solo_mask = df.get("solo", False)
+    if isinstance(solo_mask, pd.Series):
+        solo_mask = solo_mask.fillna(False).astype(bool)
+    else:
+        solo_mask = pd.Series(False, index=df.index, dtype=bool)
+    return float(total_time[solo_mask].sum())
+
+
 def _days_since_last_flight(df):
     if df.empty:
         return None
@@ -89,7 +102,7 @@ def _confidence_score(df, total_hours, hours_per_week, days_since_last):
 
 
 def calculate_solo_readiness(df, required_solo_hours=5):
-    solo_hours = df[df["solo"] == True]["total_time"].sum() if not df.empty else 0
+    solo_hours = _solo_hours(df)
     readiness = min(int((solo_hours / required_solo_hours) * 100), 100)
     return readiness
 
@@ -100,8 +113,8 @@ def predict_solo(df, hours_per_week, targets):
         total_hours = 0.0
         solo_hours = 0.0
     else:
-        total_hours = float(df["total_time"].sum())
-        solo_hours = float(df[df["solo"] == True]["total_time"].sum())
+        total_hours = float(pd.to_numeric(df.get("total_time", 0), errors="coerce").fillna(0).sum())
+        solo_hours = _solo_hours(df)
 
     # Already soloed?
     if solo_hours > 0:
