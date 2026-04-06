@@ -84,6 +84,7 @@ def _display_flight_table(df):
     table["dual time"] = total_time.where(~solo_flag, 0).round(1)
     table["solo time"] = total_time.where(solo_flag, 0).round(1)
     table["cross country"] = cross_country.fillna(False).astype(bool)
+    table["night"] = night.fillna(False).astype(bool)
     flight_cost = pd.to_numeric(_series("flight_cost", 0.0), errors="coerce").fillna(0.0)
     table["flight cost"] = flight_cost.round(2)
 
