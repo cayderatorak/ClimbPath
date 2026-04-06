@@ -1,14 +1,28 @@
 import pandas as pd
 
+def _boolean_mask(df, column_name, default=False):
+    if column_name not in df.columns:
+        return pd.Series(default, index=df.index, dtype=bool)
+    return df[column_name].fillna(default).astype(bool)
+
+
 def calculate_totals(df):
+    if df.empty:
+        return {"Dual": 0, "Solo": 0, "XC": 0, "Night": 0, "Total": 0}, df
+
+    total_time = pd.to_numeric(df.get("total_time", 0), errors="coerce").fillna(0)
+    solo_mask = _boolean_mask(df, "solo")
+    xc_mask = _boolean_mask(df, "cross_country")
+    night_mask = _boolean_mask(df, "night")
+
     totals = {
-        "Dual": df[df["solo"]==False]["total_time"].sum() if not df.empty else 0,
-        "Solo": df[df["solo"]==True]["total_time"].sum() if not df.empty else 0,
-        "XC": df[df.get("cross_country", False)]["total_time"].sum() if not df.empty else 0,
-        "Night": df[df.get("night", False)]["total_time"].sum() if not df.empty else 0,
+        "Dual": total_time[~solo_mask].sum(),
+        "Solo": total_time[solo_mask].sum(),
+        "XC": total_time[xc_mask].sum(),
+        "Night": total_time[night_mask].sum(),
     }
 
-    totals["Total"] = sum([totals[k] for k in ["Dual","Solo","XC","Night"]])
+    totals["Total"] = total_time.sum()
     return totals, df
 
 
