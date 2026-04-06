@@ -71,18 +71,26 @@ def _display_flight_table(df):
     )
     table["date of flight"] = pd.to_datetime(date_series, errors="coerce").dt.date
 
-    total_time = pd.to_numeric(_series("total_time", 0.0), errors="coerce")
-    total_time = total_time.fillna(0.0)
+    total_time = pd.to_numeric(_series("total_time", 0.0), errors="coerce").fillna(0.0)
+    dual_time = pd.to_numeric(_series("dual_time", 0.0), errors="coerce").fillna(0.0)
+    solo_time = pd.to_numeric(_series("solo_time", 0.0), errors="coerce").fillna(0.0)
 
-    solo_flag = _series("solo", False)
-    solo_flag = solo_flag.fillna(False).astype(bool)
+    # Backward compatibility with older data shapes that may only have a "solo" boolean.
+    has_dual_time = "dual_time" in df.columns
+    has_solo_time = "solo_time" in df.columns
+    if not (has_dual_time and has_solo_time):
+        solo_flag = _series("solo", False).fillna(False).astype(bool)
+        if not has_dual_time:
+            dual_time = total_time.where(~solo_flag, 0)
+        if not has_solo_time:
+            solo_time = total_time.where(solo_flag, 0)
 
     cross_country = _series("cross_country", False)
     night = _series("night", False)
 
     table["total time"] = total_time.round(1)
-    table["dual time"] = total_time.where(~solo_flag, 0).round(1)
-    table["solo time"] = total_time.where(solo_flag, 0).round(1)
+    table["dual time"] = dual_time.round(1)
+    table["solo time"] = solo_time.round(1)
     table["cross country"] = cross_country.fillna(False).astype(bool)
     table["night"] = night.fillna(False).astype(bool)
     flight_cost = pd.to_numeric(_series("flight_cost", 0.0), errors="coerce").fillna(0.0)
