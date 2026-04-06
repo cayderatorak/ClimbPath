@@ -96,7 +96,7 @@ def _display_flight_table(df):
     flight_cost = pd.to_numeric(_series("flight_cost", 0.0), errors="coerce").fillna(0.0)
     table["flight cost"] = flight_cost.round(2)
 
-    return table[["_row_id", *TABLE_COLUMNS]]
+    return table.reindex(columns=["_row_id", *TABLE_COLUMNS])
 
 
 def _normalize_date_for_db(value):
@@ -194,5 +194,5 @@ def logbook_section(df):
             st.rerun()
 
 
-    csv = updated[TABLE_COLUMNS].to_csv(index=False).encode()
+    csv = updated.reindex(columns=TABLE_COLUMNS).to_csv(index=False).encode()
     st.download_button("Download CSV", csv, "climbpath_logbook.csv")
