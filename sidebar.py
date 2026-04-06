@@ -96,7 +96,8 @@ def sidebar_controls(user):
     user_email = _user_value(user, "email") or "Unknown user"
     user_id = _user_value(user, "id")
 
-    st.sidebar.markdown(f"**Logged in:** {user_email}")
+    st.sidebar.title("ClimbPath")
+    st.sidebar.caption(f"Logged in as {user_email}")
 
     if st.sidebar.button("Logout"):
         from database import supabase
@@ -115,21 +116,24 @@ def sidebar_controls(user):
         st.session_state.saved_solo_cost = loaded_solo_cost
         st.session_state.cost_settings_loaded_for = user_id
 
-    # Inputs
+    st.sidebar.divider()
+    st.sidebar.markdown("#### Training Setup")
     track = st.sidebar.selectbox("Training Track", list(TRACKS.keys()))
     hours_week = st.sidebar.number_input("Hours / Week", 0.0, 20.0, 3.0, step=0.1)
-    dual_cost = st.sidebar.number_input(
-        "Dual Cost",
-        min_value=0.0,
-        step=5.0,
-        key="dual_cost",
-    )
-    solo_cost = st.sidebar.number_input(
-        "Solo Cost",
-        min_value=0.0,
-        step=5.0,
-        key="solo_cost",
-    )
+
+    with st.sidebar.expander("Hourly Cost Settings"):
+        dual_cost = st.number_input(
+            "Dual Cost",
+            min_value=0.0,
+            step=5.0,
+            key="dual_cost",
+        )
+        solo_cost = st.number_input(
+            "Solo Cost",
+            min_value=0.0,
+            step=5.0,
+            key="solo_cost",
+        )
 
     if (
         user_id
@@ -143,60 +147,64 @@ def sidebar_controls(user):
         st.session_state.saved_solo_cost = solo_cost
 
 
-    # Add Flight inputs
-    date = st.sidebar.date_input("Date", datetime.today())
-    flight_type = st.sidebar.selectbox("Flight Type", ["Dual", "Solo"])
-    duration = st.sidebar.number_input("Duration (hrs)", 0.0, 10.0, 1.0, step=0.1)
-    aircraft_tail_number = st.sidebar.text_input("Aircraft Tail Number")
-    instructor_name = st.sidebar.text_input("Instructor Name")
-    is_xc = st.sidebar.checkbox("XC")
-    is_night = st.sidebar.checkbox("Night")
-    feedback = st.sidebar.text_area("Instructor Feedback")
+    st.sidebar.divider()
+    with st.sidebar.expander("Log a Flight", expanded=True):
+        date = st.date_input("Date", datetime.today())
+        flight_type = st.selectbox("Flight Type", ["Dual", "Solo"])
+        duration = st.number_input("Duration (hrs)", 0.0, 10.0, 1.0, step=0.1)
+        aircraft_tail_number = st.text_input("Aircraft Tail Number")
+        instructor_name = st.text_input("Instructor Name")
+        is_xc = st.checkbox("Cross Country")
+        is_night = st.checkbox("Night")
+        feedback = st.text_area("Instructor Feedback")
 
-    if st.sidebar.button("Add Flight"):
-        try:
-            metadata_lines = []
-            if instructor_name.strip():
-                metadata_lines.append(f"Instructor: {instructor_name.strip()}")
-            if aircraft_tail_number.strip():
-                metadata_lines.append(f"Aircraft: {aircraft_tail_number.strip()}")
-            metadata = "\n".join(metadata_lines)
-            combined_feedback = feedback.strip()
-            if metadata:
-                combined_feedback = (
-                    f"{combined_feedback}\n\n{metadata}" if combined_feedback else metadata
+        if st.button("Add Flight", use_container_width=True):
+            try:
+                metadata_lines = []
+                if instructor_name.strip():
+                    metadata_lines.append(f"Instructor: {instructor_name.strip()}")
+                if aircraft_tail_number.strip():
+                    metadata_lines.append(f"Aircraft: {aircraft_tail_number.strip()}")
+                metadata = "\n".join(metadata_lines)
+                combined_feedback = feedback.strip()
+                if metadata:
+                    combined_feedback = (
+                        f"{combined_feedback}\n\n{metadata}" if combined_feedback else metadata
+                    )
+
+                add_flight_func(
+                    user_id=user_id,
+                    instructor_id=None,
+                    aircraft_id=None,
+                    rate_id=None,
+                    duration=duration,
+                    flight_type=flight_type,
+                    is_xc=is_xc,
+                    is_night=is_night,
+                    feedback=combined_feedback,
+                    flight_date=date
                 )
 
-            add_flight_func(
-                user_id=user_id,
-                instructor_id=None,
-                aircraft_id=None,
-                rate_id=None,
-                duration=duration,
-                flight_type=flight_type,
-                is_xc=is_xc,
-                is_night=is_night,
-                feedback=combined_feedback,
-                flight_date=date
-            )
-            st.success("Flight added!")
-            st.rerun()
-        except Exception as exc:
-            st.error(
-                "Unable to add flight. Open diagnostics below for details."
-            )
-            with st.expander("Add flight diagnostics"):
-                st.code(str(exc))
-                st.write(
-                    {
-                        "user_id": user_id,
-                        "flight_type": flight_type,
-                        "duration": duration,
-                        "is_xc": is_xc,
-                        "is_night": is_night,
-                        "date": str(date),
-                    }
+                st.success("Flight added!")
+                st.rerun()
+            except Exception as exc:
+                st.error(
+                    "Unable to add flight. Open diagnostics below for details."
                 )
+                with st.expander("Add flight diagnostics"):
+                    st.code(str(exc))
+                    st.write(
+                        {
+                            "user_id": user_id,
+                            "flight_type": flight_type,
+                            "duration": duration,
+                            "is_xc": is_xc,
+                            "is_night": is_night,
+                            "date": str(date),
+                        }
+                    )
+
+
 
 
     # Load flights
