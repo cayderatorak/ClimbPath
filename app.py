@@ -7,8 +7,6 @@ from sidebar import sidebar_controls
 from solo import calculate_solo_readiness, predict_solo
 from metrics_dashboard import dashboard_metrics
 from timeline import training_timeline
-from velocity_chart import training_velocity
-from heatmap import training_heatmap
 from pace_analyzer import pace_analyzer
 from risk_alerts import risk_section
 from faa_progress import faa_progress
@@ -88,8 +86,6 @@ hours_per_week = calculate_training_pace(df)  # df = your flight log dataframe
 # Render all sections
 dashboard_metrics(totals, milestone, solo_score, predicted_solo, solo_confidence, total_spent, remaining_cost, hours_per_week)
 training_timeline(totals, TRACKS[track])
-training_velocity(df)
-training_heatmap(df)
 pace_analyzer(df)
 gamification_section(gamification)
 risk_section(risk_alerts)
