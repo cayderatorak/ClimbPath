@@ -89,7 +89,8 @@ def _confidence_score(df, total_hours, hours_per_week, days_since_last):
 
     recency_conf = _recency_factor(days_since_last)
 
-    pace_confidence = min(hours_per_week / 3, 1.0)
+    weekly_hours = _coerce_weekly_hours(hours_per_week)
+    pace_confidence = min(weekly_hours / 3, 1.0)
 
     raw = (
         data_confidence  * 0.35 +
@@ -105,6 +106,34 @@ def calculate_solo_readiness(df, required_solo_hours=5):
     solo_hours = _solo_hours(df)
     readiness = min(int((solo_hours / required_solo_hours) * 100), 100)
     return readiness
+
+
+def _coerce_weekly_hours(hours_per_week):
+    """
+    Accept floats from UI controls, but also gracefully handle accidental
+    Series/DataFrame inputs so Streamlit pages don't crash on bad state.
+    """
+    if isinstance(hours_per_week, pd.DataFrame):
+        if "total_time" in hours_per_week.columns:
+            total = pd.to_numeric(hours_per_week["total_time"], errors="coerce").fillna(0)
+            if "created_at" in hours_per_week.columns and not hours_per_week.empty:
+                dates = pd.to_datetime(hours_per_week["created_at"], errors="coerce")
+                span_days = (dates.max() - dates.min()).days if dates.notna().any() else 0
+                span_weeks = max(span_days / 7, 1)
+                return float(total.sum() / span_weeks)
+            return float(total.mean())
+        return 0.0
+
+    if isinstance(hours_per_week, pd.Series):
+        numeric = pd.to_numeric(hours_per_week, errors="coerce").dropna()
+        if numeric.empty:
+            return 0.0
+        return float(numeric.mean())
+
+    try:
+        return float(hours_per_week)
+    except (TypeError, ValueError):
+        return 0.0
 
 
 def predict_solo(df, hours_per_week, targets):
@@ -140,12 +169,13 @@ def predict_solo(df, hours_per_week, targets):
 
     # Effective pace: discount hours/week by recency
     recency = _recency_factor(days_since_last)
-    effective_pace = max(hours_per_week * recency, 0.1)
+    weekly_hours = _coerce_weekly_hours(hours_per_week)
+    effective_pace = max(weekly_hours * recency, 0.1)
 
     weeks_needed = remaining_total / effective_pace
     predicted_date = pd.Timestamp.now() + pd.to_timedelta(int(weeks_needed * 7), unit="d")
 
-    confidence = _confidence_score(df, total_hours, hours_per_week, days_since_last)
+    confidence = _confidence_score(df, total_hours, weekly_hours, days_since_last)
 
     # Human-readable note explaining the estimate
     if days_since_last is not None and days_since_last > 21:
