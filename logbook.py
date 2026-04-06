@@ -41,6 +41,13 @@ EDITABLE_COLUMNS = {
 
 
 def _display_flight_table(df):
+    def _series(column_name, default_value):
+        if column_name in df.columns:
+            value = df[column_name]
+            if isinstance(value, pd.Series):
+                return value
+        return pd.Series(default_value, index=df.index)
+
     table = pd.DataFrame(index=df.index)
     table["_row_id"] = df.get("id")
 
@@ -64,21 +71,21 @@ def _display_flight_table(df):
     )
     table["date of flight"] = pd.to_datetime(date_series, errors="coerce").dt.date
 
-    total_time = pd.to_numeric(df.get("total_time"), errors="coerce") if "total_time" in df.columns else pd.Series(0.0, index=df.index)
+    total_time = pd.to_numeric(_series("total_time", 0.0), errors="coerce")
     total_time = total_time.fillna(0.0)
 
-    solo_flag = df.get("solo") if "solo" in df.columns else pd.Series(False, index=df.index)
+    solo_flag = _series("solo", False)
     solo_flag = solo_flag.fillna(False).astype(bool)
 
-    cross_country = df.get("cross_country") if "cross_country" in df.columns else pd.Series(False, index=df.index)
-    night = df.get("night") if "night" in df.columns else pd.Series(False, index=df.index)
+    cross_country = _series("cross_country", False)
+    night = _series("night", False)
 
     table["total time"] = total_time.round(1)
     table["dual time"] = total_time.where(~solo_flag, 0).round(1)
     table["solo time"] = total_time.where(solo_flag, 0).round(1)
     table["cross country"] = cross_country.fillna(False).astype(bool)
-    table["night"] = night.fillna(False).astype(bool)
-    table["flight cost"] = pd.to_numeric(df.get("flight_cost", 0), errors="coerce").fillna(0.0).round(2)
+    flight_cost = pd.to_numeric(_series("flight_cost", 0.0), errors="coerce").fillna(0.0)
+    table["flight cost"] = flight_cost.round(2)
 
     return table[["_row_id", *TABLE_COLUMNS]]
 
